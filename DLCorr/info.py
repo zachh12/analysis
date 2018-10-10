@@ -2,8 +2,9 @@ import pandas as pd
 from siggen import PPC
 from waffle.processing import *
 import numpy as np
-import dnest4.classic as dn
+import dnest4.classic as dn4
 from scipy import stats
+import sys
 import os
 
 chan_dict = {
@@ -15,12 +16,23 @@ chan_dict = {
 692: "B8474"
 }
 
-def genDF(chan):
-    cols = ['chan', 'training_id', 'avse', 'ecal', 'drift_length', 'drift_time', 
-        'r', 'z', 'phi', ]
+def generateDataFrame(chan):
+    cols = ['training_id', 'avse', 'wfid', 'ecal', 'drift_length', 'drift_time', 
+        'r', 'z', 'phi']
+
     df = pd.DataFrame(columns=cols)
+    df.detector = chan_dict[chan]
+    df.channel = chan
+    name = "data/chan" + str(chan) + "data.h5"
+    df.to_hdf(name, key='data')
+
+def getDataFrame(chan):
+    name = "data/chan" + str(chan) + "data.h5"
+    df = pd.read_hdf(name, key='data')
+    return df
 
 def store(df, wfinfo):
+    print(temp)
 
 def search(df, chan, avse):
     for root, dirs, files in os.walk("."):
@@ -31,7 +43,9 @@ def search(df, chan, avse):
             store(wfinfo)
             os.chdir("..")
 
-def process():
+def process(chan, avse):
+    name = "chan" + str(chan) + "_" + str(avse[0]) + "-" + str(avse[1]) + "avsewfs"
+    os.chdir("../Fit/" + name)
     for root, dirs, files in os.walk("."):
         for wf in dirs:
             os.chdir(wf)
@@ -53,6 +67,8 @@ def getDriftLength():
 
     return length
 def main():
+    process(626, [0,2])
+    #generateDataFrame(626)
 
 if __name__ == "__main__":
     main()

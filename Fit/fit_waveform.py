@@ -12,6 +12,10 @@ from siggen import PPC
 
 chan_dict = {
 600: "B8482",
+626: "P42574A",
+640:"P42665A",
+648:"P42664A",
+672: "P42661A",
 692: "B8474"
 }
 
@@ -20,7 +24,7 @@ def main(wf, doPlot=False):
     align_point = 0.95
     wf_idx = int(wf)
 
-    chan = 692
+    chan = 626
     directory = "chan{}_2614wfs".format(chan)
 
     wf_file = "training_data/chan{}_2614wfs.npz".format(chan)
@@ -32,28 +36,35 @@ def main(wf, doPlot=False):
 
     detector = PPC( conf_file, wf_padding=100)
 
-    lp = LowPassFilterModel(detector)
-    hp = HiPassFilterModel(detector)
+    lp = LowPassFilterModel(detector)#, order=2)
+    hp = HiPassFilterModel(detector)#, order=1)
+    #hp2 = HiPassFilterModel(detector, order=1)
     im = ImpurityModelEnds(detector)#.imp_avg_lims, detector.imp_grad_lims, detector.detector_length)
     vm = VelocityModel(include_beta=False)
 
-    #No Impurity Params
-    #wf9
-    det_params = [ 0.97349837791,0.0053163187,70.02657, -6.201,
-                   5611159,5045252,7507524,6677169,
-                    -3.63516477e+00,-4.48184667e-01]
-    det_params = [ 9.7605950989e-01,8.019304538e-03,7.05119327e+01, -5.479569,
-                   5.36624076e+06,5.0848736e+06,6.98879195e+06,6.5106570258e+06,
-                    -1.10748e-01,-8.16662213376e-02]
-    #latest
-    det_params = [ 9.74075776165e-01,6.8539811564e-03,7.1578501727e+01, -5.438884396,
-                   4.457515386644839868e+06,4.3184775276e+06,7.140984509584e+06,6.83450688e+06,
-                    -8.9707028640156e-02,-1.630706781077]
+    #Zero
+    det_params = [ 9.817430366089883176e-01, 1.278730138735418610e-02,7.199938218717272775e+01, -6.777932615671294236e+00,
+                   6.449085470174515620e+06, 5.361424581672362983e+06, 6.976555702764152549e+06, 5.471965652032286860e+06,
+                    -1.458587045254770842e-02, -7.898722765638677146e+00]
+    #Free
+    det_params = [9.730681131971946618e-01, 8.750163771125387541e-03,7.382672255928054028e+01, 3.298093005946304856e+03 ,
+                   6.807978763477065600e+06, 5.345701859110661782e+06, 8.026928269081912003e+06, 5.366043547423805110e+06,
+                    -1.550832342633457372e+00, 6.910839733938956009e-01]
+    #672
+    det_params = [9.730681131971946618e-01, 8.750163771125387541e-03,7.382672255928054028e+01, 3.298093005946304856e+03 ,
+                   6.807978763477065600e+06, 5.345701859110661782e+06, 8.026928269081912003e+06, 5.366043547423805110e+06,
+                    1.550832342633457372e+00, 6.910839733938956009e-01] 
     lp.apply_to_detector(det_params[:2], detector)
-    hp.apply_to_detector(det_params[2:4], detector)
+    hp.apply_to_detector(det_params[2:6], detector)
     vm.apply_to_detector(det_params[4:8], detector)
     im.apply_to_detector(det_params[8:], detector)
 
+    '''lp.apply_to_detector([9.730681131971946618e-01, 8.750163771125387541e-03],detector)
+    hp.apply_to_detector([7.382672255928054028e+01, 3.298093005946304856e+03,8.589024290551936502e-01, 1.330597419008175582e-02],detector)
+    #hp2.apply_to_detector([8.589024290551936502e-01, 1.330597419008175582e-02],detector)
+    im.apply_to_detector([-2.592151586040053468e-02, -1.496417924325905702e+00],detector)
+    vm.apply_to_detector([6.807978763477065600e+06, 5.345701859110661782e+06,
+         8.026928269081912003e+06, 5.366043547423805110e+06],detector)'''
     data = np.load(wf_file, encoding="latin1")
     wfs = data['wfs']
 

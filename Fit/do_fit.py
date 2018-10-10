@@ -10,11 +10,11 @@ from waffle.management import LocalFitManager, FitConfiguration
 
 chan_dict = {
 600: "B8482",
-626: "P42574A",
+626: "P42574A", #All there
 640:"P42665A",
 648:"P42664A",
-672: "P42661A",
-692: "B8474"
+672: "P42661A", #Mostly good
+692: "B8474" #Have this too
 }
 
 def main(chan, doPlot=False):
@@ -30,15 +30,11 @@ def main(chan, doPlot=False):
     conf_name = "{}.conf".format( chan_dict[chan] )
 
     wf_idxs = np.arange(0,8)
-    # wf_idxs = [1,3]
 
-    # wf_file = "16wf_set_chan{}.npz".format(chan)
-    # wf_idxs = np.arange(0,16,4)
-    # wf_idxs = [1,4,8,12]
 
     datadir= os.environ['DATADIR']
     conf_file = datadir +"/siggen/config_files/" + conf_name
-
+    
     wf_conf = {
         "wf_file_name":wf_file,
         "wf_idxs":wf_idxs,
@@ -52,9 +48,9 @@ def main(chan, doPlot=False):
         ("VelocityModel",       {"include_beta":False}),
         ("LowPassFilterModel",  {"order":2}),
         ("LowPassFilterModel",  {"order":2, "include_zeros":False}),
-        ("HiPassFilterModel",   {"order":1}),
+        ("HiPassFilterModel",   {"order":2}),
         ("OvershootFilterModel",{}),
-        ("ImpurityModelEnds",   {}),
+        ("ImpurityModelEnds",   {"avg":[-1.01090071119, -0.501090071119], "grad":[-.05, .1]}),
         ("TrappingModel",       {})
     ]
 
@@ -67,7 +63,7 @@ def main(chan, doPlot=False):
 
     if doPlot:
         import matplotlib.pyplot as plt
-        # conf.plot_training_set()
+        #conf.plot_training_set()
         fm = LocalFitManager(conf, num_threads=1)
         for wf in fm.model.wfs:
             plt.plot(wf.windowed_wf)
@@ -84,7 +80,7 @@ def main(chan, doPlot=False):
     fm = LocalFitManager(conf, num_threads=2)
 
     conf.save_config()
-    fm.fit(numLevels=1000, directory = directory,new_level_interval=5000, numParticles=10)
+    fm.fit(numLevels=1000, directory = directory,new_level_interval=5000, numParticles=15)
 
 
 if __name__=="__main__":

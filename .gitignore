@@ -2,3 +2,6 @@
 *.dat
 *.h5
 *.tab
+*.png
+*avsewfs/
+detectors/

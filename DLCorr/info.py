@@ -4,6 +4,7 @@ from waffle.processing import *
 import numpy as np
 import dnest4.classic as dn4
 from scipy import stats
+import matplotlib.pyplot as plt
 import sys
 import os
 
@@ -16,34 +17,94 @@ chan_dict = {
 692: "B8474"
 }
 
+chan = 626
+avse = [0,6]
+
+def main():
+    #process(chan, avse)
+    search()
+
 def generateDataFrame(chan):
-    cols = ['training_id', 'avse', 'wfid', 'ecal', 'drift_length', 'drift_time', 
-        'r', 'z', 'phi']
-
+    cols = ['training_id', 'r', 'z', 'phi', 'ecal', 'avse', 'drift_time', 'drift_length']
     df = pd.DataFrame(columns=cols)
-    df.detector = chan_dict[chan]
-    df.channel = chan
     name = "data/chan" + str(chan) + "data.h5"
-    df.to_hdf(name, key='data')
+    try:
+        df.to_hdf(name, key='data')
+    except:
+        os.mkdir("data")
+        df.to_hdf(name, key='data')
 
-def getDataFrame(chan):
+def getDataFrame():
     name = "data/chan" + str(chan) + "data.h5"
-    df = pd.read_hdf(name, key='data')
+    try:
+        df = pd.read_hdf(name, key='data')
+    except:
+        generateDataFrame(chan)
+        df = pd.read_hdf(name, key='data')
     return df
 
-def store(df, wfinfo):
-    print(temp)
+def getWf(det, idx, r, z, theta):
+    wfList = np.load("../Fit/training_data/chan626_5000wfs.npz")
+    trainingIdx = wfList['wfs'][idx].training_set_index
+    trainingSet = pd.read_hdf("../Fit/training_data/training_set.h5")
+    #['training_id', 'r', 'z', 'phi', 'ecal', 'avse', 'drift_time', 'drift_length']
+    wf = [trainingIdx, r, z, theta, trainingSet['ecal'][trainingIdx], 
+        trainingSet['ae'][trainingIdx], trainingSet['drift_time'][trainingIdx], 
+            getDriftLength(det, r, theta, z)]
+    if (type(trainingSet['ecal'][trainingIdx]) != np.float64):
+        return -1
+    elif (trainingSet['ecal'][trainingIdx] < 2604):
+        return -1
+    else:
+        return wf
 
-def search(df, chan, avse):
-    for root, dirs, files in os.walk("."):
+def store(idx, r, theta, z):
+    conf_name = "{}.conf".format(chan_dict[chan])
+    datadir= os.environ['DATADIR']
+    conf_file = datadir + "/siggen/config_files/" + conf_name
+    det = PPC(conf_file, wf_padding=100)
+
+    wfs = []
+    for index in idx:
+        wf = getWf(det, index, r[index], z[index], theta[index])
+        if (wf == -1):
+            continue;
+        else:
+            wfs.append(wf)
+
+    df = getDataFrame()
+    for wf in wfs:
+        df.loc[len(df)] = wf
+
+    plt.hist(df['ecal'])
+    plt.show()
+    exit()
+
+def search():
+    owd = os.getcwd()
+    idx, r, theta, z = [], [], [], []
+    for root, dirs, files in os.walk("../Fit/chan626_0-6avsewfs/"):
         for wf in dirs:
-            os.chdir(wf)
-            chain = np.loadtxt(wf)
-            wfinfo = [chain[0], chain[1], chain[2]]
-            store(wfinfo)
-            os.chdir("..")
+            chain = np.loadtxt(root + wf + "/posterior_sample.txt")
+            rtemp, ztemp, thetatemp = [], [], []
+            for sample in chain:
+                try:
+                    rtemp.append(sample[0])
+                    ztemp.append(sample[1])
+                    thetatemp.append(sample[2])
+                except:
+                    rtemp.append(chain[0])
+                    ztemp.append(chain[1])
+                    thetatemp.append(chain[2])
+            idx.append(int(wf[2:]))
+            r.append(rtemp[0])
+            z.append(ztemp[0])
+            theta.append(thetatemp[0])
+    os.chdir(owd)
+    store(idx, r, theta, z)
 
 def process(chan, avse):
+    owd = os.getcwd()
     name = "chan" + str(chan) + "_" + str(avse[0]) + "-" + str(avse[1]) + "avsewfs"
     os.chdir("../Fit/" + name)
     for root, dirs, files in os.walk("."):
@@ -51,8 +112,8 @@ def process(chan, avse):
             os.chdir(wf)
             dn4.postprocess(plot=False)
             os.chdir("..")
-
-def getDriftLength():
+    os.chdir(owd)
+def getDriftLength(det, r, theta, z):
     wf = det.GetWaveform(r, theta, z)
     hpath = det.siggenInst.GetPath(1)
 
@@ -66,9 +127,6 @@ def getDriftLength():
             (y[k]-y[k-1])**2 + (z[k]-z[k-1])**2)
 
     return length
-def main():
-    process(626, [0,2])
-    #generateDataFrame(626)
 
 if __name__ == "__main__":
     main()

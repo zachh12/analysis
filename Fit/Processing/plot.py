@@ -18,7 +18,7 @@ chan_dict = {
 }
 def calibrate(list):
 
-    df = np.load("../training_data/chan626_2614wfs.npz")
+    df = np.load("../training_data/chan626_5000wfs.npz")
     df2 = pd.read_hdf("../training_data/training_set.h5")
 
     indexes = []
@@ -26,8 +26,7 @@ def calibrate(list):
     Energy = []
     for i in list:
         indexes.append((df['wfs'][i]).training_set_index)
-        #dir = "../chan692_8wfs/wf" + str(int(i)) + "/posterior_sample.txt"
-        #post = np.loadtxt(dir)
+
     for index in indexes:
         Energy.append(df2['ecal'][index])
         times.append(df2['drift_time'][index])
@@ -43,12 +42,10 @@ def getDriftLength(det, r, theta, z):
     y = hpath[0]*np.sin(hpath[1])
     z = hpath[2]
     length = 0
-    for k in range(1, len(x)-8):
-        #print(length)
+    for k in range(1, len(x)-10):
         length += np.sqrt((x[k]-x[k-1])**2 + 
             (y[k]-y[k-1])**2 + (z[k]-z[k-1])**2)
-    #print(length)
-    #exit()
+
     return length
 
 
@@ -65,7 +62,7 @@ def energy(list, energy, times):
     efit = []
     drift_length = []
     for i in list:
-        dir = "../chan626_2614wfs/wf" + str(int(i)) + "/posterior_sample.txt"
+        dir = "../chan626_0-6avsewfs/wf" + str(int(i)) + "/posterior_sample.txt"
         post = np.loadtxt(dir)
         rtemp, ztemp, thetatemp, etemp = [], [], [], []
         for sample in post:
@@ -87,10 +84,10 @@ def energy(list, energy, times):
         length = getDriftLength(det, r[i], theta[i], z[i])
         drift_length.append(length)
     drift_length = np.array(drift_length)
-
+    
     r = np.array(r)
     slope, intercept, r_value, p_value, std_err = stats.linregress(drift_length, energy)
-
+    print("Slope :", slope)
     plt.figure(1)
     plt.title("Drift Length vs Drift Time (95%)")
     plt.scatter(times, drift_length)
@@ -113,39 +110,40 @@ def energy(list, energy, times):
     plt.ylim(2610, 2620)
     plt.xlabel("Drift Length (mm)")
     plt.ylabel("Energy (keV)")
-
     '''
+    
     #Used to calculate tau
     times = np.array(times)
     plt.close()
     plt.figure(100)
     rez = []
-    #rez2 = []
+    rez2 = []
 
-    xs = np.linspace(10000, 50000, 10000)
+    xs = np.linspace(0, 20, 50000)
     for i in xs:
-        energyc = energy * np.exp((times)*(i/100000))
-        #energyct = energy * np.exp((drift_length+times)*(i/1000000000))
-        rez.append(np.std(energyc)*2.35)
-        #rez2.append(np.std(energyct)*2.35)
-    plt.scatter(xs, rez)
+        #energyc = energy * np.exp((times)*(i/1000000))
+        energyct = energy * np.exp((drift_length)*(i/1000000))
+        #rez.append(np.std(energyc)*2.35)
+        rez2.append(np.std(energyct)*2.35)
+    plt.scatter(xs, rez2)
     plt.title("FWHM Minimization")
     plt.xlabel("Tau Parameter")
     plt.ylabel("FWHM @2614 keV")
     #plt.scatter(xs, rez2)
-    print(rez[np.argmin(rez)], xs[np.argmin(rez)])
-    #print(rez2[np.argmin(rez2)], xs[np.argmin(rez2)])
-    energyc = energy * np.exp((drift_length)*(xs[np.argmin(rez)]/1000000000))
-    #energyct = energy * np.exp((drift_length+times)*(xs[np.argmin(rez2)]/1000000000))
+    #print(rez[np.argmin(rez)], xs[np.argmin(rez)])
+    print(rez2[np.argmin(rez2)], xs[np.argmin(rez2)])
+    #energyc = energy * np.exp((drift_length)*(xs[np.argmin(rez)]/1000000))
+    energyct = energy * np.exp((drift_length+times)*(xs[np.argmin(rez2)]/1000000000))
     plt.figure(20)
     plt.hist(energy, alpha=.5, bins=20)
-    plt.hist(energyc, alpha=.5, bins=20)
-    #plt.hist(energyct, alpha=.5, bins=20)
+    #plt.hist(energyc, alpha=.5, bins=20)
+    plt.hist(energyct, alpha=.5, bins=20)
     #print(np.mean(energyc), np.mean(energyct))
     plt.show()
     exit()
     #'''
-    tau = 5.14622924584917
+    # Make sure to tune every now and then
+    tau = 5.81891637
     times = np.array(times)
     energyb = energy * np.exp((times)*(2.32213/100000))
     energyc = energy * np.exp((drift_length)*(tau/1000000))
@@ -170,26 +168,20 @@ def energy(list, energy, times):
     fwhm = np.std(energyc) * 2.35
     plt.axhline(y=np.mean(energyc), alpha=.5, color='r')
     plt.axhspan(np.mean(energyc) - fwhm/2, np.mean(energyc) + fwhm/2, alpha=0.2, color='green')
-    #for i in range(0, len(energyc)):
-    #    if ((energy[i] > 2614) and (drift_length[i] > 200)):
-    #        print(list[i])
 
     plt.show()
 
 def main():
-    exclude = [1, 16, 27]
-    #Check these later
-    tempexclude = [34, 45]
-    wfs = np.arange(0, 60)
+    #Redo them
+    exclude = [2, 5, 31,34, 36,38, 55]
+    wfs = np.arange(0, 56)
     valid = np.setdiff1d(wfs,exclude)
-    valid = np.setdiff1d(valid, tempexclude)
 
     Energy, times = calibrate(valid)
-    #plt.hist(Energy, bins=50)
-    #plt.show()
-    #for i in range(0, len(Energy)):
-    #    if (Energy[i] < 2612):
-    #        print(i)
+    #for i in range(0, len(valid)):
+        #if (Energy[i] < 2610.4):
+        #    print(i)
+    #    print(type(Energy[i]), i)
     #exit()
     energy(valid, Energy, times)
 

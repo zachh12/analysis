@@ -14,7 +14,7 @@ def main():
     #data processing
 
     proc = DataProcessor(detectorChanList=chanList)
-    '''
+
     #Pygama processing
     #runList = np.arange(11537, 11551)
     #proc.tier0(runList, chanList)
@@ -40,8 +40,8 @@ def main():
     proc.save_t2(df)
 
     proc.save_training_data(runList, "training_data/training_set.h5")
-    '''
-    n_waveforms = 2614
+    
+    n_waveforms = 5000
     for chan in chanList:
         proc.save_subset(chan, n_waveforms, "training_data/training_set.h5", "training_data/chan{}_{}wfs.npz".format(chan, n_waveforms))
 

@@ -75,10 +75,8 @@ def store(idx, r, theta, z):
     df = getDataFrame()
     for wf in wfs:
         df.loc[len(df)] = wf
-
-    plt.hist(df['ecal'])
-    plt.show()
-    exit()
+    name = "data/chan" + str(chan) + "data.h5"
+    df.to_hdf(name, key='data')
 
 def search():
     owd = os.getcwd()
@@ -113,6 +111,7 @@ def process(chan, avse):
             dn4.postprocess(plot=False)
             os.chdir("..")
     os.chdir(owd)
+
 def getDriftLength(det, r, theta, z):
     wf = det.GetWaveform(r, theta, z)
     hpath = det.siggenInst.GetPath(1)

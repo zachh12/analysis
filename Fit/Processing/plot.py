@@ -16,6 +16,7 @@ chan_dict = {
 672: "P42661A",
 692: "B8474"
 }
+
 def calibrate(list):
 
     df = np.load("../training_data/chan626_5000wfs.npz")
@@ -84,7 +85,10 @@ def energy(list, energy, times):
         length = getDriftLength(det, r[i], theta[i], z[i])
         drift_length.append(length)
     drift_length = np.array(drift_length)
-    
+
+
+    print(r[0], z[0], theta[0], drift_length[0], energy[0])
+    exit()
     r = np.array(r)
     slope, intercept, r_value, p_value, std_err = stats.linregress(drift_length, energy)
     print("Slope :", slope)
@@ -174,7 +178,7 @@ def energy(list, energy, times):
 def main():
     #Redo them
     exclude = [2, 5, 31,34, 36,38, 55]
-    wfs = np.arange(0, 56)
+    wfs = np.arange(0, 65)
     valid = np.setdiff1d(wfs,exclude)
 
     Energy, times = calibrate(valid)

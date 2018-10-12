@@ -15,7 +15,15 @@ def main():
 
 def plots():
     df = getDataFrame()
-    plt.hist(df['ecal'])
+
+    df = df[df['drift_length'] > 60]
+    slope, intercept, r_value, p_value, std_err = stats.linregress(df['drift_length'], df['ecal'])
+    x = np.linspace(1, 300)
+    y = x * slope + intercept
+    regression = plt.plot(x, y, label="R: " + str(('%.5f'%(r_value))))
+    plt.legend(loc='upper right')
+    plt.xlim(.7*np.min(df['drift_length']), 1.1*np.max(df['drift_length']))
+    plt.scatter(df['drift_length'], df['ecal'])
     plt.show()
 
 def getDataFrame():

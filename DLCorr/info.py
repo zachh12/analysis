@@ -36,11 +36,11 @@ def generateDataFrame(chan):
 
 def getDataFrame():
     name = "data/chan" + str(chan) + "data.h5"
-    try:
-        df = pd.read_hdf(name, key='data')
-    except:
-        generateDataFrame(chan)
-        df = pd.read_hdf(name, key='data')
+    #try:
+    #    df = pd.read_hdf(name, key='data')
+    #except:
+    generateDataFrame(chan)
+    df = pd.read_hdf(name, key='data')
     return df
 
 def getWf(det, idx, r, z, theta):
@@ -59,20 +59,23 @@ def getWf(det, idx, r, z, theta):
         return wf
 
 def store(idx, r, theta, z):
+
     conf_name = "{}.conf".format(chan_dict[chan])
     datadir= os.environ['DATADIR']
     conf_file = datadir + "/siggen/config_files/" + conf_name
     det = PPC(conf_file, wf_padding=100)
-
+    df = getDataFrame()
     wfs = []
-    for index in idx:
-        wf = getWf(det, index, r[index], z[index], theta[index])
+    for i in range(0, len(idx)):
+        wf = getWf(det, idx[i], r[i], z[i], theta[i])
         if (wf == -1):
+            continue;
+        elif (df['training_id'].any() == wf[0]):
+            print("Skip")
             continue;
         else:
             wfs.append(wf)
 
-    df = getDataFrame()
     for wf in wfs:
         df.loc[len(df)] = wf
     name = "data/chan" + str(chan) + "data.h5"

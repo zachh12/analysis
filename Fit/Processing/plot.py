@@ -39,14 +39,17 @@ def getDriftLength(det, r, theta, z):
     hpath = det.siggenInst.GetPath(1)
 
     #r, hpath[0] ||| angle, hpath[1] ||| z, hpath[2]
-    x = hpath[0]*np.cos(hpath[1])
-    y = hpath[0]*np.sin(hpath[1])
+    x = hpath[0]#*np.cos(hpath[1])
+    y = hpath[1]#*np.sin(hpath[1])
     z = hpath[2]
+    '''length = 0
+    for k in range(1, len(x)-8):
+        length += np.sqrt((x[k]-x[k-1])**2 + 
+            (y[k]-y[k-1])**2 + (z[k]-z[k-1])**2)'''
     length = 0
     for k in range(1, len(x)-10):
         length += np.sqrt((x[k]-x[k-1])**2 + 
             (y[k]-y[k-1])**2 + (z[k]-z[k-1])**2)
-
     return length
 
 
@@ -85,10 +88,7 @@ def energy(list, energy, times):
         length = getDriftLength(det, r[i], theta[i], z[i])
         drift_length.append(length)
     drift_length = np.array(drift_length)
-
-
-    print(r[0], z[0], theta[0], drift_length[0], energy[0])
-    exit()
+    '''
     r = np.array(r)
     slope, intercept, r_value, p_value, std_err = stats.linregress(drift_length, energy)
     print("Slope :", slope)
@@ -119,30 +119,20 @@ def energy(list, energy, times):
     #Used to calculate tau
     times = np.array(times)
     plt.close()
+    #plt.show()
     plt.figure(100)
     rez = []
-    rez2 = []
 
-    xs = np.linspace(0, 20, 50000)
+    xs = np.linspace(0, 300, 50000)
+
     for i in xs:
-        #energyc = energy * np.exp((times)*(i/1000000))
         energyct = energy * np.exp((drift_length)*(i/1000000))
-        #rez.append(np.std(energyc)*2.35)
-        rez2.append(np.std(energyct)*2.35)
-    plt.scatter(xs, rez2)
+        rez.append(np.std(energyct)*2.35)
+    plt.scatter(xs, rez)
     plt.title("FWHM Minimization")
     plt.xlabel("Tau Parameter")
     plt.ylabel("FWHM @2614 keV")
-    #plt.scatter(xs, rez2)
-    #print(rez[np.argmin(rez)], xs[np.argmin(rez)])
-    print(rez2[np.argmin(rez2)], xs[np.argmin(rez2)])
-    #energyc = energy * np.exp((drift_length)*(xs[np.argmin(rez)]/1000000))
-    energyct = energy * np.exp((drift_length+times)*(xs[np.argmin(rez2)]/1000000000))
-    plt.figure(20)
-    plt.hist(energy, alpha=.5, bins=20)
-    #plt.hist(energyc, alpha=.5, bins=20)
-    plt.hist(energyct, alpha=.5, bins=20)
-    #print(np.mean(energyc), np.mean(energyct))
+    print(np.min(rez), xs[np.argmin(rez)])
     plt.show()
     exit()
     #'''
@@ -177,8 +167,8 @@ def energy(list, energy, times):
 
 def main():
     #Redo them
-    exclude = [2, 5, 31,34, 36,38, 55]
-    wfs = np.arange(0, 65)
+    exclude = [2, 5, 31,34, 36,38]#, 55]
+    wfs = np.arange(0, 40)
     valid = np.setdiff1d(wfs,exclude)
 
     Energy, times = calibrate(valid)

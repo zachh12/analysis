@@ -21,7 +21,7 @@ chan = 626
 avse = [0,6]
 
 def main():
-    #process(chan, avse)
+    process(chan, avse)
     search()
 
 def generateDataFrame(chan):
@@ -119,14 +119,10 @@ def getDriftLength(det, r, theta, z):
     wf = det.GetWaveform(r, theta, z)
     hpath = det.siggenInst.GetPath(1)
 
-    #r, hpath[0] ||| angle, hpath[1] ||| z, hpath[2]
     x = hpath[0]#*np.cos(hpath[1])
     y = hpath[1]#*np.sin(hpath[1])
     z = hpath[2]
-    '''length = 0
-    for k in range(1, len(x)-8):
-        length += np.sqrt((x[k]-x[k-1])**2 + 
-            (y[k]-y[k-1])**2 + (z[k]-z[k-1])**2)'''
+
     length = 0
     for k in range(1, len(x)-8):
         length += np.sqrt((x[k]-x[k-1])**2 + 

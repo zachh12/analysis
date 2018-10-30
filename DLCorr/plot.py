@@ -34,33 +34,27 @@ def main():
 def plots():
 
     df = getDataFrame()
-    '''cut = (df['avse'] > 1) & (df['avse'] < 3)
-    df = df[cut]
+    #plt.scatter(df['hole_drift_length'], df['electron_drift_length'])
+    #cut = df['electron_drift_length'] < 60
+    #df = df[cut]
+    #cut = (df['avse'] > 1)# & (df['avse'] < 3)
+    #df = df[cut]
+    '''length = df['hole_drift_length'] - df['electron_drift_length']
     energy = df['ecal']
-    dtdev = (df['drift_time'] - np.mean(df['drift_time'])) / np.std(df['drift_time'])
-    slope, intercept, dt_r, p_value, std_err = stats.linregress(df['drift_time'], energy)
-    dldev = (df['drift_length'] - np.mean(df['drift_length'])) / np.std(df['drift_length'])
-    slope, intercept, dl_r, p_value, std_err = stats.linregress(df['drift_length'], energy)
-    plt.subplot(1,2,2)
-    ax = sns.regplot(x=df['ecal'], y=dldev, color='green', label='Drift Length' + " R: " + str(('%.5f'%(dl_r))))
-    plt.ylabel("Drift Length Standard Deviation From Mean")
-    plt.xlabel("Energy (keV)")
-    plt.title("Energy vs Drift Length Standard Deviation")
-    plt.xlim(2610, 2618)
-    plt.ylim(-2.5, 2.5)
-    plt.legend(fancybox=True, loc='upper right', prop={'size': 12}, markerscale=False)
-    plt.subplot(1,2,1)
-    ax2 = sns.regplot(x=df['ecal'], y=dtdev, color='purple', label='Drift Time' + " R: " + str(('%.5f'%(dt_r))))
-    plt.ylabel("Drift Time Standard Deviation From Mean")
-    plt.xlabel("Energy (keV)")
-    plt.title("Energy vs Drift Time Standard Deviation")
-    plt.xlim(2610, 2618)
-    plt.ylim(-2.5, 2.5)
-    plt.legend(fancybox=True, loc='upper right', prop={'size': 12}, markerscale=False)
-    plt.show()
+    plt.figure(1)
+    plt.scatter(length, energy)
+    slope, intercept, r_value, p_value, std_err = stats.linregress(length, energy)
+    print("Length R: ", r_value)
 
+    plt.figure(2)
+    plt.scatter(df['drift_time'], energy)
+    plt.xlabel("Time")
+    slope, intercept, r_value, p_value, std_err = stats.linregress(df['drift_time'], energy)
+    print("Time R: ", r_value)
+    plt.show()
     exit()'''
-    '''plt.hist(df['ecal'], histtype='step', lw=2, label='Energy', bins=15)
+    '''cut = (df['avse'] > 1) & (df['avse'] < 3)
+    plt.hist(df['ecal'], histtype='step', lw=2, label='Energy', bins=15)
     cut = (df['avse'] > 1) & (df['avse'] < 4.5)
     df = df[cut]
     plt.hist(df['ecal'], histtype='step', lw=2,color='r', label='With AvsE Cut', bins=15)
@@ -68,43 +62,45 @@ def plots():
     plt.legend()
     plt.show()
     exit()'''
-    cut = (df['avse'] > 1) & (df['avse'] < 3)
-    df = df[cut]
+    #cut = (df['avse'] > 1) & (df['avse'] < 3)
+    #df = df[cut]
     tune(df)
     exit()
     ecorr, ecorrt = corr(df)
     #FWHM(df, ecorr, ecorrt)
     plt.show()
 def tune(df):
-    check = np.linspace(-500, 2000, 8000)
-    check2 = np.linspace(-500, 500, 100)
-    check3 = np.linspace(-500, 500, 100)
+    check = np.linspace(0, 700, 200)
+    check2 = np.linspace(0, 700, 200)
+    check3 = np.linspace(-200, 200, 200)
     rez, rez2, rez3 = [], [], []
+    hlambda = []
+    elambda = []
     for var in check:
-        rez.append(np.std(df['ecal'] * np.exp(df['drift_length']*(var/10000000)))*2.35)
+        rez.append(np.std(df['ecal'] * np.exp((df['hole_drift_length'])*(var/10000000)))*2.35)
     for var in check:
         rez2.append(np.std(df['ecal'] * np.exp(df['drift_time'] * (var/10000000))) * 2.35)
-    '''for var in check2:
+    for var in check2:
         for var2 in check3:
-            rez3.append(2.35 * np.std(df['ecal'] * np.exp((df['drift_time'] * (var/10000000)) + df['drift_length'] * (var2/10000000))))
-    tau = check[np.argmin(rez)]'''
-    tau2 = check[np.argmin(rez2)]
+            hlambda.append(var)
+            elambda.append(var2)
+            rez3.append(2.35 * np.std(df['ecal'] * np.exp((df['hole_drift_length'] * (var/10000000)) + df['electron_drift_length'] * (var2/10000000))))
+    #tau = check[np.argmin(rez)]
+    #tau2 = check[np.argmin(rez2)]
     print("None: ", np.min(np.std(df['ecal'])*2.35))
     print("Time: ", np.min(rez2))
     print("Length: ", np.min(rez))
-    #print("Double: ", np.min(rez3))
-    #plt.figure(11)
-    check = check/10000000
-    check = 1/check
-    plt.scatter(check, rez, s=18, color='firebrick')
+    print("Double: ", np.min(rez3))
+
+    plt.plot(rez3)
     plt.title("FWHM Minimization")
     plt.xlabel("λ Parameter")
     plt.ylabel("FWHM @2614 keV")
-    plt.xlim(3000,30000)
+    minimum = np.argmin(rez3)
+    print("Time Arg: ",check[np.argmin(rez2)])
+    print(hlambda[minimum], elambda[minimum])
     plt.show()
     exit()
-    print(tau, tau2)
-    #exit()
 
 def corr(df):
     energy = df['ecal'] - np.mean(df['ecal'])

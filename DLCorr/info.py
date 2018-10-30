@@ -25,7 +25,7 @@ def main():
     search()
 
 def generateDataFrame(chan):
-    cols = ['training_id', 'r', 'z', 'phi', 'ecal', 'avse', 'drift_time', 'drift_length']
+    cols = ['training_id', 'r', 'z', 'phi', 'ecal', 'avse', 'drift_time', 'hole_drift_length', 'electron_drift_length']
     df = pd.DataFrame(columns=cols)
     name = "data/chan" + str(chan) + "data.h5"
     try:
@@ -47,10 +47,11 @@ def getWf(det, idx, r, z, theta):
     wfList = np.load("../Fit/training_data/chan626_5000wfs.npz")
     trainingIdx = wfList['wfs'][idx].training_set_index
     trainingSet = pd.read_hdf("../Fit/training_data/training_set.h5")
-    #['training_id', 'r', 'z', 'phi', 'ecal', 'avse', 'drift_time', 'drift_length']
+    #['training_id', 'r', 'z', 'phi', 'ecal', 'avse', 'drift_time', 'hole_drift_length', 'electron_drift_length']
+    drift_lengths = getDriftLength(det, r, theta, z)
     wf = [trainingIdx, r, z, theta, trainingSet['ecal'][trainingIdx], 
         trainingSet['ae'][trainingIdx], trainingSet['drift_time'][trainingIdx], 
-            getDriftLength(det, r, theta, z)]
+            drift_lengths[0], drift_lengths[1]]
     if (type(trainingSet['ecal'][trainingIdx]) != np.float64):
         return -1
     elif (trainingSet['ecal'][trainingIdx] < 2604):
@@ -123,11 +124,21 @@ def getDriftLength(det, r, theta, z):
     y = hpath[1]#*np.sin(hpath[1])
     z = hpath[2]
 
-    length = 0
+    hlength = 0
     for k in range(1, len(x)-8):
-        length += np.sqrt((x[k]-x[k-1])**2 + 
+        hlength += np.sqrt((x[k]-x[k-1])**2 + 
             (y[k]-y[k-1])**2 + (z[k]-z[k-1])**2)
-    return length
+    epath = det.siggenInst.GetPath(0)
+
+    x = epath[0]#*np.cos(hpath[1])
+    y = epath[1]#*np.sin(hpath[1])
+    z = epath[2]
+
+    elength = 0
+    for k in range(1, len(x)-8):
+        elength += np.sqrt((x[k]-x[k-1])**2 + 
+            (y[k]-y[k-1])**2 + (z[k]-z[k-1])**2)
+    return hlength, elength
 
 if __name__ == "__main__":
     main()

@@ -26,7 +26,7 @@ def main(chan, doPlot=False):
     chan = int(chan)
     directory = "8wf_zero_{}".format(chan)
 
-    wf_file = "training_data/chan{}_8wfs.npz".format(chan)
+    wf_file = "training_data/chan{}_5000wfs.npz".format(chan)
     conf_name = "{}.conf".format( chan_dict[chan] )
 
     wf_idxs = np.arange(0,8)
@@ -34,11 +34,14 @@ def main(chan, doPlot=False):
 
     datadir= os.environ['DATADIR']
     conf_file = datadir +"/siggen/config_files/" + conf_name
-    
+    rc_ms = 72
+    rc_us = 1E3*rc_ms
+    #rc_ms = 1E3*pz_chan.rc_ms.values
     wf_conf = {
         "wf_file_name":wf_file,
         "wf_idxs":wf_idxs,
         "align_idx":125,
+        "align_percent":0.95,
         "num_samples":1000,
         "do_smooth":True,
         "smoothing_type":"gauss"
@@ -46,11 +49,16 @@ def main(chan, doPlot=False):
 
     model_conf = [
         ("VelocityModel",       {"include_beta":False}),
-        ("LowPassFilterModel",  {"order":2}),
-        ("LowPassFilterModel",  {"order":2, "include_zeros":False}),
-        ("HiPassFilterModel",   {"order":2}),
-        ("OvershootFilterModel",{}),
-        ("ImpurityModelEnds",   {"avg":[-1.01090071119, -0.501090071119], "grad":[-.05, .1]}),
+        #Preamp effects
+        ("HiPassFilterModel",   {"order":1, "pmag_lims": [0.8*rc_us,1.2*rc_us]}), #rc decay filter (~70 us), second stage
+        ("HiPassFilterModel",   {"order":1, "pmag_lims": [0.98*rc_ms,1.02*rc_ms]}),
+
+        ("FirstStageFilterModel",{}),       # This is a LPF
+        ("AntialiasingFilterModel",{}),     # Digitizer front end
+        ("OvershootFilterModel",{}),        # ADC response
+        ("OscillationFilterModel",{}),      # match the observed oscillation
+        
+        ("ImpurityModelEnds",   {}),
         ("TrappingModel",       {})
     ]
 
@@ -63,7 +71,7 @@ def main(chan, doPlot=False):
 
     if doPlot:
         import matplotlib.pyplot as plt
-        #conf.plot_training_set()
+        # conf.plot_training_set()
         fm = LocalFitManager(conf, num_threads=1)
         for wf in fm.model.wfs:
             plt.plot(wf.windowed_wf)
@@ -80,7 +88,7 @@ def main(chan, doPlot=False):
     fm = LocalFitManager(conf, num_threads=2)
 
     conf.save_config()
-    fm.fit(numLevels=1000, directory = directory,new_level_interval=5000, numParticles=15)
+    fm.fit(numLevels=1000, directory = directory,new_level_interval=5000, numParticles=3)
 
 
 if __name__=="__main__":

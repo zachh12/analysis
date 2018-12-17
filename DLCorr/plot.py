@@ -1,5 +1,7 @@
 import pandas as pd
 import seaborn as sns; sns.set()
+#import matplotlib
+#matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import numpy as np
 import os
@@ -9,7 +11,7 @@ from siggen import PPC
 import dnest4.classic as dn
 from scipy import stats
 from scipy.stats import norm
-import matplotlib.mlab as mlab
+#import matplotlib.mlab as mlab
 
 bad = [26384.0, 24579.0]
 chan = 626
@@ -34,6 +36,8 @@ def main():
 def plots():
 
     df = getDataFrame()
+    print(df)
+    exit(5)
     #plt.scatter(df['hole_drift_length'], df['electron_drift_length'])
     #cut = df['electron_drift_length'] < 60
     #df = df[cut]
@@ -175,7 +179,8 @@ def FWHM(df, ecorr, ecorrt):
     #plt.xlabel("Energy Centered at Mean")
     plt.show()
 def getDataFrame():
-    name = "data/chan" + str(chan) + "data.h5"
+    name = "data/chan626data.h5"
+    #name = "data/chan"
     try:
         df = pd.read_hdf(name, key='data')
     except:

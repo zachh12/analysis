@@ -18,7 +18,7 @@ def main(dir_name, num_samples=2000, sample_dec=1, print_params=False ):
         plotter.plot_waveform_trace()
     else:
         plotter.plot_waveforms(print_det_params=print_params)
-        plotter.plot_tf()
+        #plotter.plot_tf()
 
     plt.show()
 

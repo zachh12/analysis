@@ -24,9 +24,8 @@ def main(wf, doPlot=False):
     align_point = 0.95
     wf_idx = int(wf)
 
-    #chan = 626
-    chan = 692
-    directory = "chan{}_testwfs".format(chan)
+    chan = 626
+    directory = "chan{}_wfs".format(chan)
 
     wf_file = "training_data/chan{}_5000wfs.npz".format(chan)
     conf_name = "{}.conf".format( chan_dict[chan] )

@@ -9,3 +9,4 @@ detectors/
 *wf_*
 sample_state.txt
 data/
+*.pdf

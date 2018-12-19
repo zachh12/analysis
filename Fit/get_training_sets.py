@@ -10,6 +10,7 @@ def main():
     #626, 672 Enriched PPC
     #692 BeGe
     chanList = [580, 626, 672, 692]
+    chanList=[626]
 
     #data processing
 
@@ -41,7 +42,7 @@ def main():
 
     proc.save_training_data(runList, "training_data/training_set.h5")
     
-    n_waveforms = 5000
+    n_waveforms = 8
     for chan in chanList:
         proc.save_subset(chan, n_waveforms, "training_data/training_set.h5", "training_data/chan{}_{}wfs.npz".format(chan, n_waveforms))
 

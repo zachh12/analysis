@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
-max=6
-for ((i=0; i <= $max; ++i))
+numWaveforms=6
+for ((i=0; i < $numWaveforms; ++i))
 do
     python3 fit_waveform.py $i &
-    #python3 fit_waveform.py 1 &
+    ((++i))
+    python3 fit_waveform.py $i &
     (sleep 10 && pkill -9 -f fit_waveform.py)
-    sleep 1
-    killall python3
-    echo "$i"
+    #python3 process.py
 done

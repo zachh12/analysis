@@ -1,7 +1,5 @@
 import pandas as pd
 import seaborn as sns; sns.set()
-#import matplotlib
-#matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import numpy as np
 import os
@@ -11,25 +9,12 @@ from siggen import PPC
 import dnest4.classic as dn
 from scipy import stats
 from scipy.stats import norm
-#import matplotlib.mlab as mlab
 
 bad = [26384.0, 24579.0]
 chan = 626
 tau = 753
 tau2 = 228
-avse_dict = {
-    0-1: 68.81137,
-    1-2: 1123.88,
-    2-3: 584.321,
-    3-4: 304.616, #Smaller sample size
-    4: -404.398 #uhm
-}
-bins = [0, .5, 1, 1.5, 2, 2.5, 3, 3.5]
-RawResolution = [4.21, 2.62, 4.69, 4.17, 3.28, 2.73, 4.23, 4.11]
-Tresolution = [3.61, 2.61, 3.01, 2.51, 2.84, 1.71, 3.24, 4.05]
-Lresolution = [3.82, 2.55, 2.34, 2.22, 2.40, 2.42, 3.41, 4.11]
-Dresolution = [3.59, 2.54, 2.42, 2.07, 2.40, 1.68, 2.65, 3.85]
-taus = [806, -193, 1227, 962, 537, 434, 885, 78]
+
 def main():
     plots()
 

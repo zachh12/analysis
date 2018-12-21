@@ -120,8 +120,8 @@ def getDriftLength(det, r, theta, z):
     wf = det.GetWaveform(r, theta, z)
     hpath = det.siggenInst.GetPath(1)
 
-    x = hpath[0]#*np.cos(hpath[1])
-    y = hpath[1]#*np.sin(hpath[1])
+    x = hpath[0]
+    y = hpath[1]
     z = hpath[2]
 
     hlength = 0
@@ -130,8 +130,8 @@ def getDriftLength(det, r, theta, z):
             (y[k]-y[k-1])**2 + (z[k]-z[k-1])**2)
     epath = det.siggenInst.GetPath(0)
 
-    x = epath[0]#*np.cos(hpath[1])
-    y = epath[1]#*np.sin(hpath[1])
+    x = epath[0]
+    y = epath[1]
     z = epath[2]
 
     elength = 0

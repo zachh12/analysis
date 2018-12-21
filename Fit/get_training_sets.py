@@ -5,11 +5,12 @@ from waffle.processing import *
 import matplotlib.pyplot as plt
 def main():
 
-    runList = np.arange(11510, 11551)
+    #runList = np.arange(11510, 11551)
+    runList = np.arange(11510, 11520)
     #580 Enriched PPC (Given)
     #626, 672 Enriched PPC
     #692 BeGe
-    chanList = [580, 626, 672, 692]
+    #chanList = [626]#, 672, 692]
     chanList=[626]
 
     #data processing
@@ -23,15 +24,15 @@ def main():
     #exit()
 
     #Load all runs into one common DF
-    df = proc.load_t2(runList)
+    '''df = proc.load_t2(runList)
 
     df = proc.tag_pulsers(df)
     df = df.groupby("channel").apply(proc.calibrate)
     df = df.groupby(["runNumber","channel"]).apply(proc.calculate_previous_event_params, baseline_meas="bl_int")
 
-    proc.calc_baseline_cuts(df, settle_time=25) #ms
-    proc.fit_pz(df)
-    proc.calc_ae_cut(df )
+    #proc.calc_baseline_cuts(df, settle_time=25) #ms
+    #proc.fit_pz(df)
+    #proc.calc_ae_cut(df )
 
     #calculate cut of good training waveforms
     df_bl = pd.read_hdf(proc.channel_info_file_name, key="baseline")
@@ -41,8 +42,8 @@ def main():
     proc.save_t2(df)
 
     proc.save_training_data(runList, "training_data/training_set.h5")
-    
-    n_waveforms = 8
+    '''
+    n_waveforms = 7777
     for chan in chanList:
         proc.save_subset(chan, n_waveforms, "training_data/training_set.h5", "training_data/chan{}_{}wfs.npz".format(chan, n_waveforms))
 

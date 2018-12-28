@@ -1,7 +1,8 @@
-import dnest4 as dn4
-import os, sys
+import sys
 import time
+import os
 import numpy as np
+import dnest4 as dn4
 
 def main(idx=0):
     print(idx)
@@ -16,7 +17,7 @@ def main(idx=0):
                 while loop == 1:
                     dn4.postprocess(plot=False)
                     post = np.loadtxt("posterior_sample.txt")
-                    if (len(post) < 10):
+                    if len(post) < 10:
                         time.sleep(150)
                     else:
                         os.chdir("../..")

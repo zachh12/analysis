@@ -5,8 +5,8 @@ import numpy as np
 import dnest4 as dn4
 
 def main(idx=0):
-    print(idx)
-    directory = "chan626_0-6avsewfs"
+    time.sleep(120)
+    directory = "chan626_testwfs"
     os.chdir(directory)
     for root, dirs, files in os.walk("."):
         for wf in dirs:
@@ -18,12 +18,10 @@ def main(idx=0):
                     dn4.postprocess(plot=False)
                     post = np.loadtxt("posterior_sample.txt")
                     if len(post) < 10:
-                        time.sleep(150)
+                        time.sleep(120)
                     else:
                         os.chdir("../..")
                         return
-            else:
-                continue
 
 if __name__ == "__main__":
     main(*sys.argv[1:2])

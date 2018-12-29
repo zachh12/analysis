@@ -28,9 +28,9 @@ def main(wf, doPlot=False):
 
     chan = 626
     #chan = 692
-    directory = "chan{}_testwfs".format(chan)
+    directory = "chan{}_wfs".format(chan)
 
-    wf_file = "training_data/chan{}_5000wfs.npz".format(chan)
+    wf_file = "training_data/chan{}_2614wfs.npz".format(chan)
     conf_name = "{}.conf".format( chan_dict[chan] )
 
     datadir= os.environ['DATADIR']

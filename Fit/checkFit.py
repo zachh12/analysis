@@ -6,7 +6,7 @@ import dnest4 as dn4
 
 def main(idx=0):
     time.sleep(120)
-    directory = "chan626_testwfs"
+    directory = "chan626_wfs"
     os.chdir(directory)
     for root, dirs, files in os.walk("."):
         for wf in dirs:

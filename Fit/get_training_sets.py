@@ -23,7 +23,7 @@ def main():
     #exit()
 
     #Load all runs into one common DF
-    df = proc.load_t2(runList)
+    '''df = proc.load_t2(runList)
 
     df = proc.tag_pulsers(df)
     df = df.groupby("channel").apply(proc.calibrate)
@@ -41,8 +41,8 @@ def main():
     proc.save_t2(df)
 
     proc.save_training_data(runList, "training_data/det_training_set.h5")
-    exit(5)
-    n_waveforms = 7777
+    exit(5)'''
+    n_waveforms = 2614
     for chan in chanList:
         proc.save_subset(chan, n_waveforms, "training_data/training_set.h5", "training_data/chan{}_{}wfs.npz".format(chan, n_waveforms))
 

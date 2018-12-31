@@ -21,7 +21,8 @@ def main():
 def plots():
 
     df = getDataFrame()
-    print(df)
+    for i in range(0, 100):
+        print(str(df["ecal"][i]) + str(","))
     exit(5)
     #plt.scatter(df['hole_drift_length'], df['electron_drift_length'])
     #cut = df['electron_drift_length'] < 60

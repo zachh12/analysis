@@ -18,10 +18,10 @@ chan_dict = {
 }
 
 chan = 626
-avse = [0,6]
+setName = "0-6chan626data"
 
 def main():
-    process(chan, avse)
+    #process(chan)
     search()
 
 def generateDataFrame(chan):
@@ -44,9 +44,9 @@ def getDataFrame():
     return df
 
 def getWf(det, idx, r, z, theta):
-    wfList = np.load("../Fit/training_data/chan626_5000wfs.npz")
+    wfList = np.load("data/newModel0-6/chan626_2614wfs.npz")
     trainingIdx = wfList['wfs'][idx].training_set_index
-    trainingSet = pd.read_hdf("../Fit/training_data/training_set.h5")
+    trainingSet = pd.read_hdf("data/newModel0-6/training_set.h5")
     #['training_id', 'r', 'z', 'phi', 'ecal', 'avse', 'drift_time', 'hole_drift_length', 'electron_drift_length']
     drift_lengths = getDriftLength(det, r, theta, z)
     wf = [trainingIdx, r, z, theta, trainingSet['ecal'][trainingIdx], 
@@ -85,7 +85,7 @@ def store(idx, r, theta, z):
 def search():
     owd = os.getcwd()
     idx, r, theta, z = [], [], [], []
-    for root, dirs, files in os.walk("../Fit/chan626_0-6avsewfs/"):
+    for root, dirs, files in os.walk("data/" + setName + "/"):
         for wf in dirs:
             chain = np.loadtxt(root + wf + "/posterior_sample.txt")
             rtemp, ztemp, thetatemp = [], [], []
@@ -105,9 +105,9 @@ def search():
     os.chdir(owd)
     store(idx, r, theta, z)
 
-def process(chan, avse):
+def process(chan):
     owd = os.getcwd()
-    name = "chan" + str(chan) + "_" + str(avse[0]) + "-" + str(avse[1]) + "avsewfs"
+    name = setName
     os.chdir("../Fit/" + name)
     for root, dirs, files in os.walk("."):
         for wf in dirs:
@@ -125,7 +125,7 @@ def getDriftLength(det, r, theta, z):
     z = hpath[2]
 
     hlength = 0
-    for k in range(1, len(x)-8):
+    for k in range(1, len(x)-6):
         hlength += np.sqrt((x[k]-x[k-1])**2 + 
             (y[k]-y[k-1])**2 + (z[k]-z[k-1])**2)
     epath = det.siggenInst.GetPath(0)
@@ -135,7 +135,7 @@ def getDriftLength(det, r, theta, z):
     z = epath[2]
 
     elength = 0
-    for k in range(1, len(x)-8):
+    for k in range(1, len(x)-6):
         elength += np.sqrt((x[k]-x[k-1])**2 + 
             (y[k]-y[k-1])**2 + (z[k]-z[k-1])**2)
     return hlength, elength

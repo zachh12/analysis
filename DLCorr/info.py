@@ -18,14 +18,14 @@ chan_dict = {
 }
 
 chan = 626
-setName = "0-6chan626data"
+setName = "."
 
 def main():
     #process(chan)
     search()
 
 def generateDataFrame(chan):
-    cols = ['training_id', 'r', 'z', 'phi', 'ecal', 'avse', 'drift_time', 'hole_drift_length', 'electron_drift_length']
+    cols = ['training_id', 'r', 'z', 'phi', 'ecal', 'avse', 'drift_time', 'hole_drift_length', 'electron_drift_length', 'sim_hole_drift_time', 'sim_electron_drift_time']
     df = pd.DataFrame(columns=cols)
     name = "data/chan" + str(chan) + "data.h5"
     try:
@@ -44,14 +44,15 @@ def getDataFrame():
     return df
 
 def getWf(det, idx, r, z, theta):
-    wfList = np.load("data/newModel0-6/chan626_2614wfs.npz")
+    wfList = np.load("data/0-6/chan626_2614wfs.npz")
     trainingIdx = wfList['wfs'][idx].training_set_index
-    trainingSet = pd.read_hdf("data/newModel0-6/training_set.h5")
+    trainingSet = pd.read_hdf("data/0-6/training_set.h5")
     #['training_id', 'r', 'z', 'phi', 'ecal', 'avse', 'drift_time', 'hole_drift_length', 'electron_drift_length']
     drift_lengths = getDriftLength(det, r, theta, z)
+
     wf = [trainingIdx, r, z, theta, trainingSet['ecal'][trainingIdx], 
         trainingSet['ae'][trainingIdx], trainingSet['drift_time'][trainingIdx], 
-            drift_lengths[0], drift_lengths[1]]
+            drift_lengths[0], drift_lengths[1], drift_lengths[2], drift_lengths[3]]
     if (type(trainingSet['ecal'][trainingIdx]) != np.float64):
         return -1
     elif (trainingSet['ecal'][trainingIdx] < 2604):
@@ -85,7 +86,7 @@ def store(idx, r, theta, z):
 def search():
     owd = os.getcwd()
     idx, r, theta, z = [], [], [], []
-    for root, dirs, files in os.walk("data/" + setName + "/"):
+    for root, dirs, files in os.walk("data/0-6/wfs/"):
         for wf in dirs:
             chain = np.loadtxt(root + wf + "/posterior_sample.txt")
             rtemp, ztemp, thetatemp = [], [], []
@@ -125,7 +126,7 @@ def getDriftLength(det, r, theta, z):
     z = hpath[2]
 
     hlength = 0
-    for k in range(1, len(x)-6):
+    for k in range(1, len(x)-8):
         hlength += np.sqrt((x[k]-x[k-1])**2 + 
             (y[k]-y[k-1])**2 + (z[k]-z[k-1])**2)
     epath = det.siggenInst.GetPath(0)
@@ -135,10 +136,10 @@ def getDriftLength(det, r, theta, z):
     z = epath[2]
 
     elength = 0
-    for k in range(1, len(x)-6):
+    for k in range(1, len(x)-8):
         elength += np.sqrt((x[k]-x[k-1])**2 + 
             (y[k]-y[k-1])**2 + (z[k]-z[k-1])**2)
-    return hlength, elength
+    return hlength, elength, det.siggenInst.GetLastDriftTime(1), det.siggenInst.GetLastDriftTime(0)
 
 if __name__ == "__main__":
     main()

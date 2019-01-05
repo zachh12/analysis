@@ -6,13 +6,8 @@ import matplotlib.pyplot as plt
 def main():
 
     runList = np.arange(11510, 11520)
-    #580 Enriched PPC (Given)
-    #626, 672 Enriched PPC
-    #692 BeGe
+    #Tier 1 must match Tier 2 Channels
     chanList = [580, 626, 672, 692]
-    #chanList=[626]
-
-    #data processing
 
     proc = DataProcessor(detectorChanList=chanList)
 
@@ -30,7 +25,7 @@ def main():
     df = df.groupby(["runNumber","channel"]).apply(proc.calculate_previous_event_params, baseline_meas="bl_int")
 
     #proc.calc_baseline_cuts(df, settle_time=25) #ms
-    proc.fit_pz(df)
+    #proc.fit_pz(df)
     #proc.calc_ae_cut(df )
 
     #calculate cut of good training waveforms
@@ -40,11 +35,12 @@ def main():
 
     proc.save_t2(df)
 
-    proc.save_training_data(runList, "training_data/training_set.h5")
+    proc.save_dataset(runList, "datasets/datarun{}-{}".format(np.min(runList), np.max(runList)))
     #exit(5)'''
     n_waveforms = 50
     for chan in chanList:
-        proc.save_subset(chan, n_waveforms, "training_data/training_set.h5", "training_data/chan{}_{}wfs.npz".format(chan, n_waveforms))
+        proc.save_wfs(chan, n_waveforms, "datasets/datarun{}-{}".format(np.min(runList), np.max(runList)),
+            "datasets/wfs/datarun{}-{}chan{}_{}wfs.npz".format(np.min(runList), np.max(runList), chan, n_waveforms))
 
 
 if __name__=="__main__":

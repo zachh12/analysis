@@ -30,7 +30,7 @@ def main():
     df = df.groupby(["runNumber","channel"]).apply(proc.calculate_previous_event_params, baseline_meas="bl_int")
 
     #proc.calc_baseline_cuts(df, settle_time=25) #ms
-    proc.fit_pz(df)
+    #proc.fit_pz(df)
     #proc.calc_ae_cut(df )
 
     #calculate cut of good training waveforms

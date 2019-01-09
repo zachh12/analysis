@@ -26,7 +26,7 @@ def main(chan, doPlot=False):
     chan = int(chan)
     directory = "8wf_zero_{}".format(chan)
 
-    wf_file = "training_data/chan{}_5000wfs.npz".format(chan)
+    wf_file = "training_data/chan{}_8wfs.npz".format(chan)
     conf_name = "{}.conf".format( chan_dict[chan] )
 
     wf_idxs = np.arange(0,8)
@@ -34,9 +34,9 @@ def main(chan, doPlot=False):
 
     datadir= os.environ['DATADIR']
     conf_file = datadir +"/siggen/config_files/" + conf_name
-    rc_ms = 72
-    rc_us = 1E3*rc_ms
-    #rc_ms = 1E3*pz_chan.rc_ms.values
+    #rc_ms = 72
+    rc_us = 70
+    rc_ms = 1E3*70
     wf_conf = {
         "wf_file_name":wf_file,
         "wf_idxs":wf_idxs,

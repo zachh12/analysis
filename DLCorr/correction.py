@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 from waffle.processing import *
-#import siggen
-#from siggen import PPC
+import siggen
+from siggen import PPC
 #import dnest4.classic as dn
 from scipy import stats
 import statsmodels
@@ -20,12 +20,29 @@ def main():
     df2 = getDataFrame("data/0-6chan626data.h5")
     df = df1.append(df2)
 
+    #det = PPC(os.getenv("DATADIR") + "/siggen/config_files/P42574A.conf")
+    #wf = det.GetWaveform(32.39277178686764, 0,  28.035432834454486)
+
     #Apply any cuts
     cut = df["training_id"] != 285985
-    cut = cut #& (df['avse'] > 4) #& (df['avse'] < 5)
+    #plt.hist(np.square(df['r']), bins=50)
+    #plt.show()
+    #exit()
+    cut = cut & (np.square(df['r']) > 1050)
     df = df[cut]
     df['drift_time'] *= 10
-
+    #print(np.min(df['r']), np.min(df['z']))
+    #print(np.max(df['r']), np.max(df['z']))
+    #exit()
+    #plt.scatter(np.square(df['r']), df['avse'])
+    #plt.xlabel("r**2")
+    #plt.show()
+    #exit()
+    print(df['training_id'])
+    exit()
+    #plt.hist(df['ecal'])
+    print(np.std(df['ecal']) * 2.35)
+    #plt.show()
     '''slope, intercept, r_value, p_value, std_err = stats.linregress(df['drift_time'], df['sim_hole_drift_time'])
     print(r_value)
     sns.regplot(df['drift_time'], df['sim_hole_drift_time'], label="R-Value: " + str(round(r_value, 3)))
@@ -37,9 +54,9 @@ def main():
     '''lens =  [30, 31, 25, 31, 31, 26]'''
     #time(df)
     tune(df)
-    #print(tau, delta)
-    #plotFWHM(df)
-    plotCorrelation(df)
+    print(tau, delta)
+    plotFWHM(df)
+    #plotCorrelation(df)
 
 def time(df):
     #df['drift_time'] = df['drift_time'] * 10
@@ -63,6 +80,7 @@ def plotFWHM(df):
     print(np.std(tcorr) * 2.35)
     lcorr = correct(df['ecal'], df['hole_drift_length'], delta)
     print(np.std(lcorr) * 2.35)
+
     plt.figure(1)
     plt.hist(df["ecal"]-np.mean(df["ecal"]), alpha=.5, histtype=u'step', color='red', density=True, linewidth=4, label="True PZ FWHM: " + str(round(np.std(df["ecal"]) * 2.35, 4)))
     plt.xlim(-6, 5)
@@ -137,7 +155,7 @@ def plotCorrelation(df):
     plt.show()
 
 def tune(df):
-    check = np.linspace(0, 700, 1000)
+    check = np.linspace(0, 700, 1500)
     check2 = np.linspace(0, 700, 300)
     check3 = np.linspace(-200, 200, 200)
     rez, rez2, rez3 = [], [], []

@@ -10,7 +10,7 @@ def main():
     chanList = [580, 626, 672, 692]
 
     proc = DataProcessor(detectorChanList=chanList)
-    '''
+
     #Pygama processing
     #runList = np.arange(11537, 11551)
     #proc.tier0(runList, chanList)
@@ -24,9 +24,9 @@ def main():
     df = df.groupby("channel").apply(proc.calibrate)
     df = df.groupby(["runNumber","channel"]).apply(proc.calculate_previous_event_params, baseline_meas="bl_int")
 
-    #proc.calc_baseline_cuts(df, settle_time=25, cut_sigma=3) #ms
-    #proc.fit_pz(df)
-    #proc.calc_ae_cut(df )
+    proc.calc_baseline_cuts(df, settle_time=25, cut_sigma=3) #ms
+    proc.fit_pz(df)
+    proc.calc_ae_cut(df )
 
     #calculate cut of good training waveforms
     df_bl = pd.read_hdf(proc.channel_info_file_name, key="baseline")
@@ -36,7 +36,7 @@ def main():
     proc.save_t2(df)
     
     proc.save_dataset(runList, "../datasets/datarun{}-{}.h5".format(np.min(runList), np.max(runList)))
-    '''
+    exit()
     n_waveforms = 500
     for chan in chanList:
         proc.save_wfs(chan, n_waveforms, "../datasets/datarun{}-{}.h5".format(np.min(runList), np.max(runList)),

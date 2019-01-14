@@ -5,17 +5,17 @@ from waffle.processing import *
 import matplotlib.pyplot as plt
 def main():
 
-    runList = np.arange(11510, 11551)
+    runList = np.arange(11510, 11514)
     #580 Enriched PPC (Given)
     #626, 672 Enriched PPC
     #692 BeGe
-    chanList = [580, 626, 672, 692]
+    chanList = [580]#, 626, 672, 692]
     #chanList=[626]
 
     #data processing
 
     proc = DataProcessor(detectorChanList=chanList)
-    '''
+
     #Pygama processing
     #runList = np.arange(11537, 11551)
     #proc.tier0(runList, chanList)
@@ -41,7 +41,7 @@ def main():
     proc.save_t2(df)
 
     proc.save_training_data(runList, "training_data/training_set.h5")
-    #exit(5)'''
+    exit(5)
     n_waveforms = 8
     for chan in chanList:
         proc.save_subset(chan, n_waveforms, "training_data/training_set.h5", "training_data/chan{}_{}wfs.npz".format(chan, n_waveforms))

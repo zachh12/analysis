@@ -12,10 +12,10 @@ def main():
     proc = DataProcessor(detectorChanList=chanList)
 
     #Pygama processing
-    #runList = np.arange(11537, 11551)
+    #runList = np.arange(11520, 11525)
     #proc.tier0(runList, chanList)
-    #df = proc.tier1(runList, num_threads=4, overwrite=True)
-    #exit()
+    df = proc.tier1(runList, num_threads=4, overwrite=True)
+    exit()
 
     #Load all runs into one common DF
     df = proc.load_t2(runList)

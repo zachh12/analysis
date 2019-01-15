@@ -14,8 +14,8 @@ def main():
     #Pygama processing
     #runList = np.arange(11520, 11525)
     #proc.tier0(runList, chanList)
-    df = proc.tier1(runList, num_threads=4, overwrite=True)
-    exit()
+    #df = proc.tier1(runList, num_threads=4, overwrite=True)
+    #exit()
 
     #Load all runs into one common DF
     df = proc.load_t2(runList)
@@ -36,7 +36,7 @@ def main():
     proc.save_t2(df)
     
     proc.save_dataset(runList, "../datasets/datarun{}-{}.h5".format(np.min(runList), np.max(runList)))
-    exit()
+    #exit()
     n_waveforms = 500
     for chan in chanList:
         proc.save_wfs(chan, n_waveforms, "../datasets/datarun{}-{}.h5".format(np.min(runList), np.max(runList)),

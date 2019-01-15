@@ -16,42 +16,20 @@ delta = 625
 tau = 159
 def main():
     #Get Data
-    df1 = getDataFrame("data/-1chan626data.h5")
-    df2 = getDataFrame("data/0-6chan626data.h5")
-    df = df1.append(df2)
-
-    #det = PPC(os.getenv("DATADIR") + "/siggen/config_files/P42574A.conf")
-    #wf = det.GetWaveform(32.39277178686764, 0,  28.035432834454486)
+    df = getDataFrame("data/chan626data.h5")
 
     #Apply any cuts
-    cut = df["training_id"] != 285985
-    #plt.hist(np.square(df['r']), bins=50)
-    #plt.show()
-    #exit()
-    cut = cut & (np.square(df['r']) > 1050)
+
+    cut = (np.square(df['r']) < 1050)
     df = df[cut]
     df['drift_time'] *= 10
-    #print(np.min(df['r']), np.min(df['z']))
-    #print(np.max(df['r']), np.max(df['z']))
-    #exit()
-    #plt.scatter(np.square(df['r']), df['avse'])
-    #plt.xlabel("r**2")
+
+    #plt.scatter(np.square(df['r']), df['z'])
     #plt.show()
     #exit()
-    print(df['training_id'])
-    exit()
     #plt.hist(df['ecal'])
     print(np.std(df['ecal']) * 2.35)
-    #plt.show()
-    '''slope, intercept, r_value, p_value, std_err = stats.linregress(df['drift_time'], df['sim_hole_drift_time'])
-    print(r_value)
-    sns.regplot(df['drift_time'], df['sim_hole_drift_time'], label="R-Value: " + str(round(r_value, 3)))
-    plt.title("Waveform Drift Time vs Simulated Hole Drift Time")
-    plt.xlabel("Calculated Drift Time 0-99% (ns)")
-    plt.ylabel("Simulated Hole Drift Time (ns)")
-    plt.legend()
-    plt.show()'''
-    '''lens =  [30, 31, 25, 31, 31, 26]'''
+
     #time(df)
     tune(df)
     print(tau, delta)

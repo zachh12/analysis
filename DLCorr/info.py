@@ -44,9 +44,9 @@ def getDataFrame():
     return df
 
 def getWf(det, idx, r, z, theta):
-    wfList = np.load("data/0-6/chan626_2614wfs.npz")
+    wfList = np.load("data/datarun11510-11550chan626_500wfs.npz")
     trainingIdx = wfList['wfs'][idx].training_set_index
-    trainingSet = pd.read_hdf("data/0-6/training_set.h5")
+    trainingSet = pd.read_hdf("data/datarun11510-11550.h5")
     #['training_id', 'r', 'z', 'phi', 'ecal', 'avse', 'drift_time', 'hole_drift_length', 'electron_drift_length']
     drift_lengths = getDriftLength(det, r, theta, z)
 
@@ -86,7 +86,7 @@ def store(idx, r, theta, z):
 def search():
     owd = os.getcwd()
     idx, r, theta, z = [], [], [], []
-    for root, dirs, files in os.walk("data/0-6/wfs/"):
+    for root, dirs, files in os.walk("data/chan626_wfs/"):
         for wf in dirs:
             chain = np.loadtxt(root + wf + "/posterior_sample.txt")
             rtemp, ztemp, thetatemp = [], [], []

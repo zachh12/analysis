@@ -7,38 +7,69 @@ from scipy.ndimage.filters import gaussian_filter1d
 from scipy import signal
 from scipy import stats
 import os
-
+chans = [580, 626, 672, 692]
+cal = [727.330, 860.564, 2614.553]
+adc = [1784.87, 2117.04517, 6422.5466]
+#580, 692
 def main():
-    #df = np.load("wfs/datarun11510-11550chan626_50wfs.npz")
-    #df = np.load("chan626_2614wfs.npz")
-    wfs = np.load("data/datarun11510-11550chan626_500wfs.npz")
+    #calibrate()
+    wfs = np.load("data/datarun11510-11549chan626_250wfs.npz")
     df = pd.read_hdf("data/chan626data.h5", key='data')
-    print(wfs['wfs'][0].bl_int)
-    
-    for i in range(30):
-        print(dir(wfs['wfs'][0]))
-        exit()
-        wf = (((pz_correct(wfs['wfs'][i].get_waveform(), 89))))
-        traps.append(trap_max(wf, method="fixed_time", pickoff_sample=1200))
-        #plt.show()
-        #wf = (pz_correct(wfs['wfs'][i].get_waveform(), 89))
-        #wf = trap_filter(wf)
-        #traps.append(trap_max(wf))
+    slope, intercept, r_value, p_value, std_err = stats.linregress(adc, cal)
+    #print(slope, intercept, r_value)
 
+#exit()
 
-    #adc = [2100, np.mean(traps)]
-    #cal = [860.564, 2614.553]
-    #slope, intercept, r_value, p_value, std_err = stats.linregress(adc, cal)
+    fwhm = []
+    #pzs = [40, 50, 60, 65, 68, 75, 89, 100, 120, 150]
+    pzs = np.linspace(50, 100, 15)
+    for pole in pzs:
+        vals = []
+        for i in range(250):
+            wf = wfs['wfs'][i]
+            if (wf.amplitude < 5000):
+                continue
 
-    traps = np.array(traps)
-    ecal = traps
-    #ecal = (traps * (1/82))
-    ecal = ecal + (2614.5 - np.mean(ecal))
+            blrm = remove_baseline(wf.get_waveform(), wf.bl_int, wf.bl_slope)
+            pz = pz_correct(blrm, pole)
+            trap = trap_filter(pz)
+            vals.append(trap_max(trap, method="fixed_time", pickoff_sample=600))
 
-    print(np.std(ecal)*2.35)
-    plt.hist(ecal)
+        val = np.array(vals)
+        ecal = val * slope + intercept
+        print(np.std(ecal) * 2.35)
+        fwhm.append(np.std(ecal) * 2.35)
+    print(np.min(fwhm), pzs[np.argmin(fwhm)])
+    pzs = np.array(pzs)
+    plt.scatter(1/pzs, fwhm)
     plt.show()
 
+    exit()
+
+
+'''
+Used to find ADC to ECAL conversion
+'''
+def calibrate(): 
+    unFitwfs = np.load("data/datarun11510-11549chan626_250wfs.npz")
+    #unFitTraining = pd.read_hdf("data/unfit/datarun11510-11550.h5", key="data")
+    #print(dir(unFitwfs['wfs'][0]))
+    adcs = []
+    for i in range(60):
+        wf = unFitwfs['wfs'][i]
+        trap = trap_filter(pz_correct(remove_baseline(wf.get_waveform(), wf.bl_int, wf.bl_slope), 70))
+        adcs.append(trap_max(trap,method="max"))
+    one, two, tl = [], [], []
+    for num in adcs:
+        if (num > 5000):
+            tl.append(num)
+        elif (num < 1830):
+            one.append(num)
+        else:
+            two.append(num)
+    print(np.mean(one), np.mean(two), np.mean(tl))
+    global adc
+    adc = [np.mean(one), np.mean(two), np.mean(tl)]
 
 '''
     These are the helper functions used when

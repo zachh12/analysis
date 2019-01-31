@@ -16,25 +16,31 @@ delta = 625
 tau = 159
 def main():
     #Get Data
-    df = getDataFrame("data/chan626data.h5")
+    df = getDataFrame("data/chan672data.h5")
 
     #Apply any cuts
 
-    cut = (np.square(df['r']) < 1050)
+    #cut = (np.square(df['r']) < 1050)
+
+
+    cut =  (df['ecal'] > 800) & (df['ecal'] < 1400)
     df = df[cut]
+    plt.hist(df['ecal'])
+    plt.show()
     df['drift_time'] *= 10
 
-    #plt.scatter(np.square(df['r']), df['z'])
+    #plt.scatter(df['r'], df['z'])
+    #plt.yscale("log")
     #plt.show()
     #exit()
     #plt.hist(df['ecal'])
     print(np.std(df['ecal']) * 2.35)
-
+    print(len(df['ecal']))
     #time(df)
     tune(df)
     print(tau, delta)
     plotFWHM(df)
-    #plotCorrelation(df)
+    plotCorrelation(df)
 
 def time(df):
     #df['drift_time'] = df['drift_time'] * 10

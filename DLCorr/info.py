@@ -17,7 +17,7 @@ chan_dict = {
 692: "B8474"
 }
 
-chan = 626
+chan = 672
 setName = "."
 
 def main():
@@ -25,7 +25,8 @@ def main():
     search()
 
 def generateDataFrame(chan):
-    cols = ['training_id', 'r', 'z', 'phi', 'ecal', 'avse', 'drift_time', 'hole_drift_length', 'electron_drift_length', 'sim_hole_drift_time', 'sim_electron_drift_time']
+    cols = ['training_id', 'r', 'z', 'phi', 'ecal', 'avse', 'drift_time', 'hole_drift_length', 'electron_drift_length', 'sim_hole_drift_time', 
+    'sim_electron_drift_time', 'fitE', 'waveform', 'bl_int', 'bl_slope']
     df = pd.DataFrame(columns=cols)
     name = "data/chan" + str(chan) + "data.h5"
     try:
@@ -43,24 +44,25 @@ def getDataFrame():
     df = pd.read_hdf(name, key='data')
     return df
 
-def getWf(det, idx, r, z, theta):
-    wfList = np.load("data/datarun11510-11550chan626_500wfs.npz")
+def getWf(det, idx, r, z, theta, fitE):
+    wfList = np.load("data/datarun11510-11549chan672_250wfs.npz")
     trainingIdx = wfList['wfs'][idx].training_set_index
-    trainingSet = pd.read_hdf("data/datarun11510-11550.h5")
+    trainingSet = pd.read_hdf("data/datarun11510-11549.h5")
     #['training_id', 'r', 'z', 'phi', 'ecal', 'avse', 'drift_time', 'hole_drift_length', 'electron_drift_length']
     drift_lengths = getDriftLength(det, r, theta, z)
 
     wf = [trainingIdx, r, z, theta, trainingSet['ecal'][trainingIdx], 
         trainingSet['ae'][trainingIdx], trainingSet['drift_time'][trainingIdx], 
-            drift_lengths[0], drift_lengths[1], drift_lengths[2], drift_lengths[3]]
+        drift_lengths[0], drift_lengths[1], drift_lengths[2], drift_lengths[3],
+        fitE, trainingSet['waveform'][trainingIdx], wfList['wfs'][idx].bl_int, wfList['wfs'][idx].bl_slope]
     if (type(trainingSet['ecal'][trainingIdx]) != np.float64):
         return -1
-    elif (trainingSet['ecal'][trainingIdx] < 2604):
+    elif (trainingSet['ecal'][trainingIdx] < 500):
         return -1
     else:
         return wf
 
-def store(idx, r, theta, z):
+def store(idx, r, theta, z, tempE):
 
     conf_name = "{}.conf".format(chan_dict[chan])
     datadir= os.environ['DATADIR']
@@ -69,7 +71,7 @@ def store(idx, r, theta, z):
     df = getDataFrame()
     wfs = []
     for i in range(0, len(idx)):
-        wf = getWf(det, idx[i], r[i], z[i], theta[i])
+        wf = getWf(det, idx[i], r[i], z[i], theta[i], tempE[i])
         if (wf == -1):
             continue;
         elif (df['training_id'].any() == wf[0]):
@@ -85,26 +87,30 @@ def store(idx, r, theta, z):
 
 def search():
     owd = os.getcwd()
-    idx, r, theta, z = [], [], [], []
-    for root, dirs, files in os.walk("data/chan626_wfs/"):
+    idx, r, theta, z, fitE = [], [], [], [], []
+    for root, dirs, files in os.walk("data/chan672_wfs/"):
         for wf in dirs:
             chain = np.loadtxt(root + wf + "/posterior_sample.txt")
-            rtemp, ztemp, thetatemp = [], [], []
+            rtemp, ztemp, thetatemp, tempE = [], [], [], []
             for sample in chain:
                 try:
                     rtemp.append(sample[0])
                     ztemp.append(sample[1])
                     thetatemp.append(sample[2])
+                    tempE.append(sample[3])
                 except:
                     rtemp.append(chain[0])
                     ztemp.append(chain[1])
                     thetatemp.append(chain[2])
+                    tempE.append(chain[3])
             idx.append(int(wf[2:]))
             r.append(rtemp[0])
             z.append(ztemp[0])
             theta.append(thetatemp[0])
+            fitE.append(tempE[0])
+
     os.chdir(owd)
-    store(idx, r, theta, z)
+    store(idx, r, theta, z, fitE)
 
 def process(chan):
     owd = os.getcwd()

@@ -24,7 +24,7 @@ energies = []
 def search():
     owd = os.getcwd()
     ene, idx, r, theta, z = [], [], [], [], []
-    for root, dirs, files in os.walk("data/0-6/wfs/"):
+    for root, dirs, files in os.walk("data/chan626_wfs/"):
         for wf in dirs:
             chain = np.loadtxt(root + wf + "/levels.txt")
             energies.append(chain[len(chain)-1][1])
@@ -32,7 +32,7 @@ def search():
 search()
 plt.hist(energies)
 plt.show()
-wfList = np.load("data/0-6/chan626_2614wfs.npz")
+wfList = np.load("data/chan626_250wfs.npz")
 
 
 

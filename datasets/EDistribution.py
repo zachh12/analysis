@@ -23,8 +23,9 @@ def tune(df):
     #trainingIdx = wfList['wfs'][idx].training_set_index
 chanList = [580, 626, 672, 692]
 for chan in chanList:
-    trainingSet = pd.read_hdf("datarun11520-11524.h5")
+    trainingSet = pd.read_hdf("datarun11510-11550.h5")
     cut = trainingSet['channel'] == chan
+    cut = cut & (trainingSet['ecal'] > 2600)
     trainingSet = trainingSet[cut]
     tune(trainingSet)
     energy = trainingSet['ecal'] * np.exp(trainingSet['drift_time'] * (tau/10000000))

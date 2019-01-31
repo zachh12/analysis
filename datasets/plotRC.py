@@ -8,7 +8,7 @@ from scipy import signal
 import os
 
 def main():
-    #df = np.load("wfs/datarun11510-11550chan626_50wfs.npz")
+    #df = np.load("datarun11510-11549chan672_250wfs.npz")
     df = np.load("chan626_2614wfs.npz")
 
     #df = np.load("../Fit/training_data/chan626_8wfs.npz")

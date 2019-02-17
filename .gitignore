@@ -11,3 +11,4 @@ sample_state.txt
 data/
 *.pdf
 detInfo.json
+*-checkpoint*

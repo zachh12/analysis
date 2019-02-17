@@ -1,8 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import pygama
-#from waffle.processing import *
+from pygama.calculators import t0_estimate, max_time
 from scipy.ndimage.filters import gaussian_filter1d
 from scipy import signal
 from scipy import stats
@@ -13,39 +12,57 @@ cal = [1173, 1332, 1460]
 adc = [181, 210, 235]
 def main():
     df = pd.read_hdf("t1_run3.h5", key='ORSIS3302DecoderForEnergy')
-
+    df =  df[(df.index < 20000)]
+    #exit()
     bl_ints, bl_stds, bl_slopes  = getBaselines(df)
+    t0s = get_t0(df, bl_ints)
     wfs = []
 
-
-    for wf, bl_int, bl_std, bl_slope in zip(df['waveform'], bl_ints, bl_stds, bl_slopes):
-        cut_slope = (bl_slope > -.02) & (bl_slope < .02)
-        #cut_int = (bl_int > -785) & (bl_int < -768)
+    for wf, bl_int, bl_std, bl_slope, t0 in zip(df['waveform'], bl_ints, bl_stds, bl_slopes, t0s):
+        #cut_slope = (bl_slope > -.02) & (bl_slope < .02)
+        cut_t0 = (t0 > 250) & (t0 < 350)
         #cut_int = (bl_int > -760) & (bl_int < -737)
         #cut_int = (bl_int > -730) & (bl_int < -713)
-        cut_std = bl_std < 5
+        cut_std = bl_std < 7
         #cut = cut_slope  & cut_std & cut_int
-        cut = cut_slope & cut_std
+        cut = cut_t0
         if (cut):
             wf = wf[0]
             wf = wf - bl_int
             wfs.append(wf)
-
+    np.savez('wfs.npz', wfs)
     trap_max = trap_maxes(wfs)
-    wfsSave = []
     slope, intercept, r_value, p_value, std_err = stats.linregress(adc, cal)
     trap_max = np.float64(trap_max) * slope + intercept 
-    for wf, trap in zip(df['waveform'], trap_max):
-        cut = ((trap > 1000) & (trap < 1550))
+
+    wfsSave = []
+    for wf, trap, bl_slope in zip(df['waveform'], trap_max, bl_slopes):
+        cut = ((trap > 1000) & (trap < 1600))
+        cut_slope = (bl_slope > -.03) & (bl_slope < .03)
+        #cut_std = bl_std < 10
+        cut = cut & cut_slope #& cut_std
         if (cut):
             wf = wf[0]
             wfsSave.append(wf)
-    np.savez('k40.npz', wfsSave)
+
     plt.hist(trap_max, bins=3200)
     #plt.xlabel("Energy [keV]")
     #plt.xlim(1400, 1550)
     plt.show()
     np.savetxt("ecal.txt", trap_max)
+
+def get_t0(df, bl_ints):
+    t0 = []
+    #dt = []
+    for wf, bl_int in zip(df['waveform'], bl_ints):
+        wf = wf[0]
+        wf = wf - bl_int
+        est = t0_estimate(wf)
+        t0.append(est)
+        #dt.append(max_time(wf) - est)
+    print("woo")
+    return t0
+
 
 def getBaselines(df):
     bl_int = []

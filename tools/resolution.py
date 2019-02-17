@@ -18,10 +18,11 @@ def main():
     #exit()
     k40, co60 = [], []
     for num in ecal:
-        if ((num > 1435) & (num < 1480)):
+        if ((num > 1435) & (num < 1475)):
             k40.append(num)
-        #elif ((num > 1300) & (num < 1370)):
-        #    co60.append(num)
+        elif ((num > 1300) & (num < 1370)):
+            co60.append(num)
+        #elif ((num ))
     print(len(k40))
     plt.hist(k40, bins=30)
     #plt.hist(co60)

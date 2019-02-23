@@ -14,45 +14,120 @@ cal = [1173, 1332, 1460]
 adc = [211, 246, 273]
 def main():
     df = np.load("wfs.npz")
+    wfs0 = df['arr_0']
+    rc, tail = GetDecay(wfs0)
     #print(df.files)
     wfs0 = df['arr_0']
     wfs = []
     bl_ints, bl_stds, bl_slopes  = getBaselines(wfs0)
+    t0s = Get_t0(wfs0)
+    #np.savetxt("t0s.txt", t0s)  
 
-    for wf, bl_int, bl_std, bl_slope in zip(wfs0, bl_ints, bl_stds, bl_slopes):
+    #exit()
+    #for wf, bl_int, bl_std, bl_slope in zip(wfs0, bl_ints, bl_stds, bl_slopes):
+    #for wf, rc_d, bl_int, in zip(wfs0, rc, bl_ints):
+    for wf,  bl_int, in zip(wfs0,  bl_ints):
         #cut_slope = (bl_slope > -.02) & (bl_slope < .02)
         #cut_std = bl_std < 5
         #cut = cut_slope & cut_std
+        #cut = (rc_d > 1000)
         #if (cut):
         wf = wf - bl_int
         wfs.append(wf)
-    wf = wfs[5]
-    plt.plot(wf/np.amax(wf))
 
-    plt.plot(pz_correct(wf/np.amax(wf), 200),alpha=.3)
-    plt.plot(pz_correct(wf/np.amax(wf), 250),alpha=.3)
-    plt.plot(pz_correct(wf/np.amax(wf), 300),alpha=.3)
-    plt.plot(pz_correct(wf/np.amax(wf), 350), alpha=.3)
-    plt.plot(pz_correct(wf/np.amax(wf), 400),alpha=.3)
-    plt.plot(pz_correct(wf/np.amax(wf), 450),alpha=.3)
-    plt.plot(pz_correct(wf/np.amax(wf), 470), alpha=.3)
-    #plt.plot(pz_correct(wf/np.amax(wf), 75),alpha=.3)
-    #plt.plot(pz_correct(wf/np.amax(wf), 80),alpha=.3)
-        #plt.xlim(0, 500)
-        #plt.ylim(0, 1)
-    plt.show()
-        #plt.plot(pz_correct(wfs[i]/np.amax(wfs[i]),180))
-    plt.show()
-    exit()
+    #plt.plot(wfs[0])
+    #plt.show()
+    #exit()
     trap_max = trap_maxes(wfs)
+    #exit()
+    #cols = ['waveform', 'trap_max', 'bl_int', 'bl_slope', 'bl_std', 'rc_decay']
+    df = pd.DataFrame()
+    df['waveform'] = wfs0.tolist()
+    df['trap_max'] = trap_max
+    df['bl_int'] = bl_ints
+    df['bl_slope'] = bl_slopes
+    df['bl_std'] = bl_stds
+    df['rc_decay'] = rc
+    df['tail'] = tail
+    df['t0'] = t0s
+    df.to_hdf("test_data.h5", key='data')
 
-    slope, intercept, r_value, p_value, std_err = stats.linregress(adc, cal)
-    trap_max = np.float64(trap_max) * slope + intercept 
-    plt.hist(trap_max, bins=300)
+def Get_t0(wfs):
+    t0s = []
+    for wf in wfs:
+        est = t0_estimate(wf)
+        t0s.append(est)
+    return t0s
+
+def GetDecay(wfs):
+    tail = []
+    rc = []
+    for wf in wfs:
+        wf = wf / np.amax(wf)
+        rc.append(FindRC(wf))
+        wf = wf * 2614
+        argmax = np.argmax(wf)
+        wfTemp = wf
+        wf = wf[argmax:]
+        x = np.linspace(0, 1, len(wf))
+        slope, intercept, r_value, p_value, std_err = stats.linregress(x, wf)
+        tail.append(slope)
+        #print(slope, intercept)
+        #plt.plot(wfTemp)
+        #plt.show()
+    plt.figure(1)
+    plt.hist(tail, bins=300)
+    plt.xlabel("Decay Slope [ADC / Nanosecond???]")
+    print(np.mean(tail))
+    plt.figure(2)
+    plt.hist(rc, bins=800)
+    plt.xlabel("Optimized RC Constant [us]")
+    #plt.xlim(-200, 100)
+    #plt.yscale('log')
     plt.show()
+    #exit()
+    #plt.close()
+    return rc, tail
 
-    np.savetxt("ecal.txt", trap_max)
+def FindRC(wf):
+    opt_rc = []
+    min_slope = []
+    pzs = np.linspace(-100, 500, 100)
+    for pz in pzs:
+        wf_pz = pz_correct(wf, rc=pz)
+        argmax = np.argmax(wf_pz)
+        wf_pz = wf_pz[argmax:]
+        x = np.linspace(0, 1, len(wf_pz))
+        slope, intercept, r_value, p_value, std_err = stats.linregress(x, wf_pz)
+        opt_rc.append(pz)
+        min_slope.append(slope)
 
+    #plt.plot(wf)
+    #plt.show()
+    #print(opt_rc[np.argmin(np.abs(min_slope))])
+    #plt.plot(pz_correct(wf, rc=opt_rc[np.argmin(np.abs(min_slope))]))
+    #plt.show()
+    return(opt_rc[np.argmin(np.abs(min_slope))])
+
+def rc_decay(rc1_us, freq = 100E6):
+    '''
+    rc1_us: decay time constant in microseconds
+    freq: digitization frequency of signal you wanna process
+    '''
+
+    rc1_dig= 1E-6 * (rc1_us) * freq
+    rc1_exp = np.exp(-1./rc1_dig)
+    num = [1,-1]
+    den = [1, -rc1_exp]
+
+    return (num, den)
+
+def pz_correct(waveform, rc, digFreq=100E6):
+    ''' RC params are in us'''
+    #get the linear filter parameters.
+    num, den = rc_decay(rc, digFreq)
+    #reversing num and den does the inverse transform (ie, PZ corrects)
+    return signal.lfilter(den, num, waveform)
 def getBaselines(wfs):
     bl_int = []
     bl_std = []
@@ -65,20 +140,23 @@ def getBaselines(wfs):
         bl_std.append(np.std(bl))
         slope, intercept, r_value, p_value, std_err = stats.linregress(x, bl)
         bl_slope.append(slope)
+
     return bl_int, bl_std, bl_slope
 
 def trap_maxes(wfs):
     trapMax = []
 
     for wf in wfs:
-        wf = running_mean(wf, 3)
-        trap = trap_filter(wf, rampTime=400, flatTime=200)
+        #wf = running_mean(wf, 3)
+        trap = trap_filter(wf, rampTime=100, flatTime=200)
         #plt.plot(trap)
         #plt.plot(wf)
         #plt.ylim(0, np.amax(trap) + 50)
+        #plt.xlim(0, 250)
         #plt.show()
         trapMax.append(trap_max(trap, method="max", pickoff_sample=55))
         #trapMax.append(np.amax(wf))
+
     return trapMax
 
 def running_mean(x, N):

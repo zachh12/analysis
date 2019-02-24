@@ -13,11 +13,14 @@ import h5py
 cal = [1173, 1332, 1460]
 adc = [211, 246, 273]
 def main():
-    df = np.load("wfs.npz")
-    wfs0 = df['arr_0']
+    #df = np.load("wfs.npz")
+    #wfs0 = df['arr_0']
+    df0 = pd.read_hdf("chan626data.h5")
+    wfs = df0['waveform']
+    wfs0 = wfs
     rc, tail = GetDecay(wfs0)
     #print(df.files)
-    wfs0 = df['arr_0']
+    #wfs0 = df['arr_0']
     wfs = []
     bl_ints, bl_stds, bl_slopes  = getBaselines(wfs0)
     t0s = Get_t0(wfs0)
@@ -39,7 +42,7 @@ def main():
     #plt.show()
     #exit()
     trap_max = trap_maxes(wfs)
-    #exit()
+
     #cols = ['waveform', 'trap_max', 'bl_int', 'bl_slope', 'bl_std', 'rc_decay']
     df = pd.DataFrame()
     df['waveform'] = wfs0.tolist()
@@ -50,6 +53,7 @@ def main():
     df['rc_decay'] = rc
     df['tail'] = tail
     df['t0'] = t0s
+    df['drift_time'] = df0['drift_time']
     df.to_hdf("test_data.h5", key='data')
 
 def Get_t0(wfs):

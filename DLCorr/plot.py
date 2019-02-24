@@ -1,6 +1,7 @@
 import pandas as pd
 import seaborn as sns; sns.set()
 import matplotlib.pyplot as plt
+import matplotlib.mlab as mlab
 import numpy as np
 import os
 from waffle.processing import *
@@ -21,43 +22,19 @@ def main():
 def plots():
 
     df = getDataFrame()
-    for i in range(0, 100):
-        print(str(df["ecal"][i]) + str(","))
-    exit(5)
-    #plt.scatter(df['hole_drift_length'], df['electron_drift_length'])
-    #cut = df['electron_drift_length'] < 60
-    #df = df[cut]
-    #cut = (df['avse'] > 1)# & (df['avse'] < 3)
-    #df = df[cut]
-    '''length = df['hole_drift_length'] - df['electron_drift_length']
-    energy = df['ecal']
-    plt.figure(1)
-    plt.scatter(length, energy)
-    slope, intercept, r_value, p_value, std_err = stats.linregress(length, energy)
-    print("Length R: ", r_value)
 
-    plt.figure(2)
-    plt.scatter(df['drift_time'], energy)
-    plt.xlabel("Time")
-    slope, intercept, r_value, p_value, std_err = stats.linregress(df['drift_time'], energy)
-    print("Time R: ", r_value)
-    plt.show()
-    exit()'''
-    '''cut = (df['avse'] > 1) & (df['avse'] < 3)
-    plt.hist(df['ecal'], histtype='step', lw=2, label='Energy', bins=15)
-    cut = (df['avse'] > 1) & (df['avse'] < 4.5)
-    df = df[cut]
-    plt.hist(df['ecal'], histtype='step', lw=2,color='r', label='With AvsE Cut', bins=15)
-    plt.xlabel("Energy (keV)")
-    plt.legend()
-    plt.show()
-    exit()'''
-    #cut = (df['avse'] > 1) & (df['avse'] < 3)
-    #df = df[cut]
-    tune(df)
+    print(df['waveform'])
     exit()
+    cut = (df['ecal'] > 2000)
+    df = df[cut]
+
+    plt.hist(df['ecal'], histtype='step', lw=2,color='r', bins=15)
+
+    plt.show()
+    #exit()
+    tune(df)
     ecorr, ecorrt = corr(df)
-    #FWHM(df, ecorr, ecorrt)
+    FWHM(df, ecorr, ecorrt)
     plt.show()
 def tune(df):
     check = np.linspace(0, 700, 200)
@@ -70,46 +47,46 @@ def tune(df):
         rez.append(np.std(df['ecal'] * np.exp((df['hole_drift_length'])*(var/10000000)))*2.35)
     for var in check:
         rez2.append(np.std(df['ecal'] * np.exp(df['drift_time'] * (var/10000000))) * 2.35)
-    for var in check2:
-        for var2 in check3:
-            hlambda.append(var)
-            elambda.append(var2)
-            rez3.append(2.35 * np.std(df['ecal'] * np.exp((df['hole_drift_length'] * (var/10000000)) + df['electron_drift_length'] * (var2/10000000))))
+    #for var in check2:
+    #    for var2 in check3:
+    #        hlambda.append(var)
+    ##        elambda.append(var2)
+    #        rez3.append(2.35 * np.std(df['ecal'] * np.exp((df['hole_drift_length'] * (var/10000000)) + df['electron_drift_length'] * (var2/10000000))))
     #tau = check[np.argmin(rez)]
     #tau2 = check[np.argmin(rez2)]
     print("None: ", np.min(np.std(df['ecal'])*2.35))
     print("Time: ", np.min(rez2))
     print("Length: ", np.min(rez))
-    print("Double: ", np.min(rez3))
+    #print("Double: ", np.min(rez3))
 
-    plt.plot(rez3)
+    plt.plot(rez)
     plt.title("FWHM Minimization")
     plt.xlabel("λ Parameter")
     plt.ylabel("FWHM @2614 keV")
-    minimum = np.argmin(rez3)
+    #minimum = np.argmin(rez3)
     print("Time Arg: ",check[np.argmin(rez2)])
-    print(hlambda[minimum], elambda[minimum])
+    #print(hlambda[minimum], elambda[minimum])
     plt.show()
-    exit()
+    #exit()
 
 def corr(df):
     energy = df['ecal'] - np.mean(df['ecal'])
-    slope, intercept, r_value, p_value, std_err = stats.linregress(df['drift_length'], energy)
+    slope, intercept, r_value, p_value, std_err = stats.linregress(df['hole_drift_length'], energy)
     print("Slope: ", slope)
     x = np.linspace(10, 50)
     y = x * slope + intercept
     regression = plt.plot(x, y, label="R: " + str(('%.5f'%(r_value))))
     plt.legend(loc='upper right')
-    plt.scatter(df['drift_length'], energy)
+    plt.scatter(df['hole_drift_length'], energy)
     plt.xlabel("Drift Length (mm)")
     plt.ylabel("Energy (arb)")
     plt.ylim(-4, 4)
     plt.title("Drift Length vs Energy @2614 keV Peak")
     plt.figure(2)
-    ecorr = df['ecal'] * np.exp(df['drift_length']*(tau/10000000))
+    ecorr = df['ecal'] * np.exp(df['hole_drift_length']*(tau/10000000))
     ecorrt = df['ecal'] * np.exp(df['drift_time'] * (tau2/10000000))
     ecorr = ecorr - np.mean(ecorr)
-    plt.scatter(df['drift_length'], ecorr - np.mean(ecorr))
+    plt.scatter(df['hole_drift_length'], ecorr - np.mean(ecorr))
     plt.title("Drift Length vs Length Corrected Energy")
     plt.xlabel("Drift Length (mm)")
     plt.ylabel("Energy (arb)")

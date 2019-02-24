@@ -12,22 +12,21 @@ cal = [1173, 1332, 1460]
 adc = [211, 246, 272]
 cal = [1332, 1460, 2614]
 adc = [257, 282, 503]
+cal = [727.330, 860.564, 2614.553]
+adc = [1835.375, 2154, 6422.75]
 opt_tau = 1655.4
 #44.8
 def main():
-    df = pd.read_hdf("test_data_dt.h5", key="data")
+    df = pd.read_hdf("test_data.h5", key="data")
 
     slope, intercept, r_value, p_value, std_err = stats.linregress(adc, cal)
     df['trap_max'] = np.float64(df['trap_max']) * slope + intercept
     df['drift_time'] = df['drift_time'] * 10
-    print(df.columns)
 
-    cut =  (df['trap_max'] > 1420) & (df['trap_max'] < 1500)
-    #cut = cut & (df['drift_time'] > 450) & (df['drift_time'] < 1500)
+    cut =  (df['trap_max'] < 780)# & (df['trap_max'] < 2700)
     df = df[cut]
-
-    slope, intercept, r_value, p_value, std_err = stats.linregress(df['drift_time'], df['trap_max'])
-
+    print(np.std(df['trap_max']) * 2.35)
+    
     taus = np.linspace(-1000,2000, 1000)
     fwhms = []
     for tau in taus:
@@ -36,9 +35,9 @@ def main():
 
     plt.figure(1)
     plt.scatter(taus, fwhms)
-    print(taus[np.argmin(fwhms)])
+    print(np.min(fwhms), taus[np.argmin(fwhms)])
     plt.figure(3)
-    plt.hist(df['trap_max'] * np.exp(df['drift_time'] * (-33 / 10000000)), bins=40)
+    plt.hist(df['trap_max'] * np.exp(df['drift_time'] * (-taus[np.argmin(fwhms)] / 10000000)), bins=40)
     plt.show()
 
 def running_mean(x, N):
@@ -61,7 +60,9 @@ def time(df):
             drift_time.append(-100)
     
     df['drift_time'] = drift_time - df['t0']
-
+    print(df['drift_time'])
+    plt.show()
+    df.to_hdf("test_data_mjd.h5", key='data')
 
 if __name__ == '__main__':
     main()

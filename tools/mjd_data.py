@@ -18,8 +18,6 @@ def main():
 
     wfs = df['waveform']
 
-
-
     wfz = []
     for wf, bl_int, bl_slope in zip(df['waveform'],  df['bl_int'], df['bl_slope']):
         wf = remove_baseline(wf, bl_0=bl_int, bl_1=bl_slope)

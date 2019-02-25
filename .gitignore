@@ -11,6 +11,10 @@ sample_state.txt
 data/
 *.pdf
 detInfo.json
+<<<<<<< HEAD
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
 Run3
+*-checkpoint*
+*checkpoint.ipynb
+

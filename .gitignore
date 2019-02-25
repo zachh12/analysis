@@ -12,3 +12,4 @@ data/
 *.pdf
 detInfo.json
 *-checkpoint*
+*checkpoint.ipynb

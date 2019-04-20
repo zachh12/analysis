@@ -23,8 +23,9 @@ def plots():
 
     df = getDataFrame()
 
-    print(df['waveform'])
-    exit()
+    #print(df['waveform'])
+    #exit()
+
     cut = (df['ecal'] > 2000)
     df = df[cut]
 
@@ -33,8 +34,9 @@ def plots():
     plt.show()
     #exit()
     tune(df)
-    ecorr, ecorrt = corr(df)
-    FWHM(df, ecorr, ecorrt)
+    #ecorr, ecorrt = corr(df)
+    #FWHM(df, ecorr, ecorrt)
+
     plt.show()
 def tune(df):
     check = np.linspace(0, 700, 200)

@@ -5,22 +5,23 @@ from waffle.processing import *
 import matplotlib.pyplot as plt
 def main():
 
-    runList = np.arange(11510, 11551)
+    runList = np.arange(11510, 11511)
     #580 Enriched PPC (Given)
     #626, 672 Enriched PPC
     #692 BeGe
-    chanList = [580, 626, 672, 692]
-    #chanList=[626]
-
+    #chanList = [580, 626, 672, 692]
+    chanList=[626]
+    chanList=[584, 582, 580, 578, 640, 642, 616, 628, 630, 626, 672, 692]
+    chanList = [584]
     #data processing
 
     proc = DataProcessor(detectorChanList=chanList)
 
     #Pygama processing
-    #runList = np.arange(11537, 11551)
-    #proc.tier0(runList, chanList)
-    #df = proc.tier1(runList, num_threads=4, overwrite=True)
-    #exit()
+    #runList = np.arange(11525, 11526)
+    proc.tier0(runList, chanList)
+    df = proc.tier1(runList, num_threads=6, overwrite=True)
+    exit()
 
     #Load all runs into one common DF
     df = proc.load_t2(runList)

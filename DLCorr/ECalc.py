@@ -9,9 +9,10 @@ import sys
 import os
 
 trap_dict = {
-626: 80#64.28
+626: 80,#64.28
+672: 79
 }
-chan = 626
+chan = 672
 def main():
     calcEnergy()
     calibrate()
@@ -21,15 +22,21 @@ def calibrate():
     cal = [727.330, 860.564, 2614.553]
 
     df = pd.read_hdf("data/chan" + str(chan) + "data.h5", key='data')
-
-    df_max2614 = df[(df['trap_max'] > 6140) & (df['trap_max'] < 6230)]
+    #plt.hist(df['trap_max'], bins=300)
+    #plt.show()
+    #plt.hist(df['trap_ft'], bins=300)
+    #plt.show()
+    #plt.hist(df['fitE'], bins=300)
+    #plt.show()
+    #exit()
+    df_max2614 = df[(df['trap_max'] > 6000) & (df['trap_max'] < 6230)]
     df_max2614mean = np.mean(df_max2614['trap_max'])
-    df_max860 = df[(df['trap_max'] > 1800) & (df['trap_max'] < 1920)]
+    df_max860 = df[(df['trap_max'] > 1800) & (df['trap_max'] < 1980)]
     df_max860mean = np.mean(df_max860['trap_max'])
-    df_max727 = df[(df['trap_max'] > 1500) & (df['trap_max'] < 1600)]
+    df_max727 = df[(df['trap_max'] > 1450) & (df['trap_max'] < 1600)]
     df_max727mean = np.mean(df_max727['trap_max'])
     adc = [df_max727mean, df_max860mean, df_max2614mean]
-
+ 
     slope, intercept, r_value, p_value, std_err = stats.linregress(adc, cal)
     df['trap_max'] = df['trap_max'] * slope + intercept
 
@@ -37,11 +44,10 @@ def calibrate():
     df_max2614mean = np.mean(df_max2614['trap_ft'])
     df_max860 = df[(df['trap_ft'] > 1600) & (df['trap_ft'] < 1850)]
     df_max860mean = np.mean(df_max860['trap_ft'])
-    df_max727 = df[(df['trap_ft'] > 1200) & (df['trap_ft'] < 1500)]
+    df_max727 = df[(df['trap_ft'] > 1200) & (df['trap_ft'] < 1550)]
     df_max727mean = np.mean(df_max727['trap_ft'])
     adc = [df_max727mean, df_max860mean, df_max2614mean]
-    print(adc)
-    exit()
+
     slope, intercept, r_value, p_value, std_err = stats.linregress(adc, cal)
     df['trap_ft'] = df['trap_ft'] * slope + intercept
 
@@ -52,10 +58,10 @@ def calibrate():
     df_max727 = df[(df['fitE'] > 1720) & (df['fitE'] < 1840)]
     df_max727mean = np.mean(df_max727['fitE'])
     adc = [df_max727mean, df_max860mean, df_max2614mean]
-    print(adc)
-    exit()
+
     slope, intercept, r_value, p_value, std_err = stats.linregress(adc, cal)
     df['fitE'] = df['fitE'] * slope + intercept
+
 
     print(np.std(df['trap_max']) * 2.35, np.std(df['trap_ft']) * 2.35, np.std(df['fitE']) * 2.35, np.std(df['ecal']) * 2.35)
 
@@ -69,7 +75,7 @@ def calcEnergy():
     for i in range(len(df)):
         wf = df['waveform'][i]
         blrm = remove_baseline(wf, df['bl_int'][i], df['bl_slope'][i])
-        plt.plot(blrm)
+        #plt.plot(blrm)
         pz = pz_correct(wf, trap_dict[chan])
         trap = trap_filter(pz)
         #plt.plot(trap)
@@ -77,7 +83,9 @@ def calcEnergy():
         #exit()
         df['trap_max'][i] = trap_max(trap, method="max")
         df['trap_ft'][i] = trap_max(trap, method="fixed_time", pickoff_sample=600)
-    return df
+     #   print(trap_max(trap, method="max"))
+    #exit()
+    #return df
     df.to_hdf("data/chan" + str(chan) + "data.h5", key='data')
 
     '''

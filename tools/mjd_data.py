@@ -14,8 +14,34 @@ cal = [1173, 1332, 1460]
 adc = [211, 246, 273]
 def main():
     #df = pd.read_hdf("chan626data.h5")
-    df = pd.read_hdf("chan626data.h5")
+    data = os.getenv('DATADIR')
+    ds6 = data + '/mjd/t1/t1_run29534.h5'
+    #ds6 = data + '/mjd/t1/t1_run11520.h5'
+    ds6 = 't1_run29534.h5'
+    df6 = pd.read_hdf(ds6, key="ORGretina4MWaveformDecoder")
 
+    #wf = df6['waveform'][411]
+    #print(df6)
+    #exit()
+    maxs = []
+    above = []
+    for wf in df6['waveform']:
+
+        wf = wf[50:1250]
+        wf = wf - np.mean(wf[50:300])
+        if (np.amax(wf) > 4000):
+            above.append(np.amax(wf))
+        trap = trap_filter(wf, rampTime=150, flatTime=300)
+        maxs.append(trap_max(trap, method="fixed_time", pickoff_sample=575))
+
+    plt.figure(1)  
+    plt.hist(maxs, bins=300)
+    plt.figure(2)
+    plt.hist(above, bins=80)
+    plt.show()
+    
+
+def calcs(df):
     wfs = df['waveform']
 
     wfz = []
@@ -62,10 +88,10 @@ def trap_maxes(wfs):
     trapMax = []
 
     for wf in wfs:
-        wf = pz_correct(wf, rc=79)
+        wf = pz_correct(wf, rc=72)
         trap = trap_filter(wf, rampTime=400, flatTime=200)
-        #plt.plot(trap)
-        #plt.show()
+        plt.plot(trap)
+        plt.show()
         trapMax.append(trap_max(trap, method="max", pickoff_sample=600))
     return trapMax
 

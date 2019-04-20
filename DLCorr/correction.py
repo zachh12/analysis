@@ -16,7 +16,7 @@ delta = 625
 tau = 159
 def main():
     #Get Data
-    df = getDataFrame("data/chan672data.h5")
+    df = getDataFrame("data/chan626data.h5")
 
     #Apply any cuts
 

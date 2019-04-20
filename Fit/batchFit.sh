@@ -1,6 +1,6 @@
 #!/bin/bash
-numWaveforms=450
-for ((i=0; i < $numWaveforms; ++i))
+numWaveforms=400
+for ((i=44; i < $numWaveforms; ++i))
 do
     python3 fit_waveform.py $i &
     ((++i))

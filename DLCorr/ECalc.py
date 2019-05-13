@@ -9,10 +9,17 @@ import sys
 import os
 
 trap_dict = {
-626: 80,#64.28
-672: 79
+626: 70,
+672: 70,
+692: 70
 }
-chan = 672
+#[max, ft, fitE], [slope, int]
+cal_dict = {
+626: [[0.4079163772696832, 88.24274370714352],[0.4087940881749243, 124.10630773102548],[0.408892157679714, -3.1822542545719443]],
+672: [[0.4079163772696832, 88.24274370714352],[0.4087940881749243, 124.10630773102548],[0.408892157679714, -3.1822542545719443]],
+692: [[0.40208432759502305, 94.28843463439557], [0.4025818080976151, 131.02582584581228], [0.40226129361430035, 0.9147482366054192]]
+}
+chan = 626
 def main():
     calcEnergy()
     calibrate()
@@ -20,49 +27,45 @@ def main():
 
 def calibrate():
     cal = [727.330, 860.564, 2614.553]
-
     df = pd.read_hdf("data/chan" + str(chan) + "data.h5", key='data')
-    #plt.hist(df['trap_max'], bins=300)
-    #plt.show()
-    #plt.hist(df['trap_ft'], bins=300)
-    #plt.show()
-    #plt.hist(df['fitE'], bins=300)
-    #plt.show()
-    #exit()
-    df_max2614 = df[(df['trap_max'] > 6000) & (df['trap_max'] < 6230)]
+    '''
+    df_max2614 = df[(df['trap_max'] > 6000) & (df['trap_max'] < 6500)]
     df_max2614mean = np.mean(df_max2614['trap_max'])
-    df_max860 = df[(df['trap_max'] > 1800) & (df['trap_max'] < 1980)]
+    df_max860 = df[(df['trap_max'] > 1700) & (df['trap_max'] < 2080)]
     df_max860mean = np.mean(df_max860['trap_max'])
-    df_max727 = df[(df['trap_max'] > 1450) & (df['trap_max'] < 1600)]
+    df_max727 = df[(df['trap_max'] > 1000) & (df['trap_max'] < 1700)]
     df_max727mean = np.mean(df_max727['trap_max'])
     adc = [df_max727mean, df_max860mean, df_max2614mean]
- 
     slope, intercept, r_value, p_value, std_err = stats.linregress(adc, cal)
-    df['trap_max'] = df['trap_max'] * slope + intercept
-
-    df_max2614 = df[(df['trap_ft'] > 5050) & (df['trap_ft'] < 6230)]
+    print(slope, intercept)
+    '''
+    df['trap_max'] = df['trap_max'] * cal_dict[chan][0][0] + cal_dict[chan][0][1]
+    '''
+    df_max2614 = df[(df['trap_ft'] > 6000) & (df['trap_ft'] < 6500)]
     df_max2614mean = np.mean(df_max2614['trap_ft'])
-    df_max860 = df[(df['trap_ft'] > 1600) & (df['trap_ft'] < 1850)]
+    df_max860 = df[(df['trap_ft'] > 1600) & (df['trap_ft'] < 2050)]
     df_max860mean = np.mean(df_max860['trap_ft'])
-    df_max727 = df[(df['trap_ft'] > 1200) & (df['trap_ft'] < 1550)]
+    df_max727 = df[(df['trap_ft'] > 700) & (df['trap_ft'] < 1600)]
     df_max727mean = np.mean(df_max727['trap_ft'])
     adc = [df_max727mean, df_max860mean, df_max2614mean]
-
     slope, intercept, r_value, p_value, std_err = stats.linregress(adc, cal)
-    df['trap_ft'] = df['trap_ft'] * slope + intercept
-
-    df_max2614 = df[(df['fitE'] > 6300) & (df['fitE'] < 6800)]
+    print(slope, intercept)
+    '''
+    df['trap_ft'] = df['trap_ft'] * cal_dict[chan][1][0] + cal_dict[chan][1][1]
+    '''
+    df_max2614 = df[(df['fitE'] > 6000) & (df['fitE'] < 6800)]
     df_max2614mean = np.mean(df_max2614['fitE'])
-    df_max860 = df[(df['fitE'] > 2030) & (df['fitE'] < 2170)]
+    df_max860 = df[(df['fitE'] > 2000) & (df['fitE'] < 2500)]
     df_max860mean = np.mean(df_max860['fitE'])
-    df_max727 = df[(df['fitE'] > 1720) & (df['fitE'] < 1840)]
+    df_max727 = df[(df['fitE'] > 1000) & (df['fitE'] < 2000)]
     df_max727mean = np.mean(df_max727['fitE'])
     adc = [df_max727mean, df_max860mean, df_max2614mean]
-
     slope, intercept, r_value, p_value, std_err = stats.linregress(adc, cal)
-    df['fitE'] = df['fitE'] * slope + intercept
+    print(slope, intercept)
+    '''
+    df['fitE'] = df['fitE'] * cal_dict[chan][2][0] + cal_dict[chan][2][1]
 
-
+    
     print(np.std(df['trap_max']) * 2.35, np.std(df['trap_ft']) * 2.35, np.std(df['fitE']) * 2.35, np.std(df['ecal']) * 2.35)
 
     df.to_hdf("data/chan" + str(chan) + "data.h5", key='data')

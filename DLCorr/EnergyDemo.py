@@ -13,8 +13,8 @@ adc = [1784.87, 2117.04517, 6422.5466]
 #580, 692
 def main():
     #calibrate()
-    wfs = np.load("data/datarun11510-11549chan626_250wfs.npz")
-    df = pd.read_hdf("data/chan626data.h5", key='data')
+    wfs = np.load("data/datarun11510-11550chan672_1250wfs.npz")
+    df = pd.read_hdf("data/chan672data.h5", key='data')
     slope, intercept, r_value, p_value, std_err = stats.linregress(adc, cal)
     #print(slope, intercept, r_value)
 
@@ -22,10 +22,10 @@ def main():
 
     fwhm = []
     #pzs = [40, 50, 60, 65, 68, 75, 89, 100, 120, 150]
-    pzs = np.linspace(50, 100, 15)
+    pzs = np.linspace(70, 100, 10)
     for pole in pzs:
         vals = []
-        for i in range(250):
+        for i in range(50):
             wf = wfs['wfs'][i]
             if (wf.amplitude < 5000):
                 continue

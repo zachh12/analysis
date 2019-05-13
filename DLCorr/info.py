@@ -17,7 +17,7 @@ chan_dict = {
 692: "B8474"
 }
 
-chan = 672
+chan = 626
 setName = "."
 
 def main():
@@ -45,9 +45,9 @@ def getDataFrame():
     return df
 
 def getWf(det, idx, r, z, theta, fitE):
-    wfList = np.load("data/datarun11510-11549chan672_250wfs.npz")
+    wfList = np.load("data/datarun11510-11550chan{}_1250wfs.npz".format(chan))
     trainingIdx = wfList['wfs'][idx].training_set_index
-    trainingSet = pd.read_hdf("data/datarun11510-11549.h5")
+    trainingSet = pd.read_hdf("data/datarun11510-11550.h5")
     #['training_id', 'r', 'z', 'phi', 'ecal', 'avse', 'drift_time', 'hole_drift_length', 'electron_drift_length']
     drift_lengths = getDriftLength(det, r, theta, z)
 
@@ -63,7 +63,6 @@ def getWf(det, idx, r, z, theta, fitE):
         return wf
 
 def store(idx, r, theta, z, tempE):
-
     conf_name = "{}.conf".format(chan_dict[chan])
     datadir= os.environ['DATADIR']
     conf_file = datadir + "/siggen/config_files/" + conf_name
@@ -88,7 +87,7 @@ def store(idx, r, theta, z, tempE):
 def search():
     owd = os.getcwd()
     idx, r, theta, z, fitE = [], [], [], [], []
-    for root, dirs, files in os.walk("data/chan672_wfs/"):
+    for root, dirs, files in os.walk("data/chan{}_wfs/".format(chan)):
         for wf in dirs:
             chain = np.loadtxt(root + wf + "/posterior_sample.txt")
             rtemp, ztemp, thetatemp, tempE = [], [], [], []

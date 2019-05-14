@@ -10,11 +10,16 @@ from siggen import PPC
 import dnest4.classic as dn
 from scipy import stats
 from scipy.stats import norm
+chan_dict = {
+600: "B8482",
+626: "P42574A",
+640:"P42665A",
+648:"P42664A",
+672: "P42661A",
+692: "B8474"
+}
+chan = 692
 
-bad = [26384.0, 24579.0]
-chan = 626
-tau = 753
-tau2 = 228
 
 def main():
     plots()
@@ -22,129 +27,94 @@ def main():
 def plots():
 
     df = getDataFrame()
-
-    #print(df['waveform'])
-    #exit()
-
     cut = (df['ecal'] > 2000)
     df = df[cut]
 
-    plt.hist(df['ecal'], histtype='step', lw=2,color='r', bins=15)
-
-    plt.show()
-    #exit()
-    tune(df)
-    #ecorr, ecorrt = corr(df)
-    #FWHM(df, ecorr, ecorrt)
-
-    plt.show()
-def tune(df):
-    check = np.linspace(0, 700, 200)
-    check2 = np.linspace(0, 700, 200)
-    check3 = np.linspace(-200, 200, 200)
-    rez, rez2, rez3 = [], [], []
-    hlambda = []
-    elambda = []
-    for var in check:
-        rez.append(np.std(df['ecal'] * np.exp((df['hole_drift_length'])*(var/10000000)))*2.35)
-    for var in check:
-        rez2.append(np.std(df['ecal'] * np.exp(df['drift_time'] * (var/10000000))) * 2.35)
-    #for var in check2:
-    #    for var2 in check3:
-    #        hlambda.append(var)
-    ##        elambda.append(var2)
-    #        rez3.append(2.35 * np.std(df['ecal'] * np.exp((df['hole_drift_length'] * (var/10000000)) + df['electron_drift_length'] * (var2/10000000))))
-    #tau = check[np.argmin(rez)]
-    #tau2 = check[np.argmin(rez2)]
-    print("None: ", np.min(np.std(df['ecal'])*2.35))
-    print("Time: ", np.min(rez2))
-    print("Length: ", np.min(rez))
-    #print("Double: ", np.min(rez3))
-
-    plt.plot(rez)
-    plt.title("FWHM Minimization")
-    plt.xlabel("λ Parameter")
-    plt.ylabel("FWHM @2614 keV")
-    #minimum = np.argmin(rez3)
-    print("Time Arg: ",check[np.argmin(rez2)])
-    #print(hlambda[minimum], elambda[minimum])
-    plt.show()
-    #exit()
-
-def corr(df):
-    energy = df['ecal'] - np.mean(df['ecal'])
-    slope, intercept, r_value, p_value, std_err = stats.linregress(df['hole_drift_length'], energy)
-    print("Slope: ", slope)
-    x = np.linspace(10, 50)
-    y = x * slope + intercept
-    regression = plt.plot(x, y, label="R: " + str(('%.5f'%(r_value))))
-    plt.legend(loc='upper right')
-    plt.scatter(df['hole_drift_length'], energy)
-    plt.xlabel("Drift Length (mm)")
-    plt.ylabel("Energy (arb)")
-    plt.ylim(-4, 4)
-    plt.title("Drift Length vs Energy @2614 keV Peak")
-    plt.figure(2)
-    ecorr = df['ecal'] * np.exp(df['hole_drift_length']*(tau/10000000))
-    ecorrt = df['ecal'] * np.exp(df['drift_time'] * (tau2/10000000))
-    ecorr = ecorr - np.mean(ecorr)
-    plt.scatter(df['hole_drift_length'], ecorr - np.mean(ecorr))
-    plt.title("Drift Length vs Length Corrected Energy")
-    plt.xlabel("Drift Length (mm)")
-    plt.ylabel("Energy (arb)")
-    plt.ylim(-4, 4)
-    plt.show()
-    #exit()
-    print("None: ", np.std(df['ecal'])*2.35)
-    print("Time: ", np.std(ecorrt)*2.35)
-    print("Length: ", np.std(ecorr)*2.35)
-    #plt.figure(100)
-    #plt.hist(df['ecal'] - np.mean(df['ecal']), alpha=.6, bins=20)
-    #plt.hist(ecorrt - np.mean(ecorrt), alpha=.5, bins=20)
-    #plt.hist(ecorr - np.mean(ecorr), alpha=.5, bins=12)
-    plt.show()
-    return ecorr, ecorrt
-
-def FWHM(df, ecorr, ecorrt):
-    energy = df.ecal - np.mean(df.ecal)
-    ecorr = ecorr - np.mean(ecorr)
-    ecorrt = ecorrt - np.mean(ecorrt)
-    bins2 = np.linspace(-4, 4, 400)
-
+    conf_name = "{}.conf".format(chan_dict[chan])
+    datadir= os.environ['DATADIR']
+    conf_file = datadir + "/siggen/config_files/" + conf_name
+    det = PPC(conf_file, wf_padding=100)
+    t0 = []
+    electron = []
+    hole = []
+    for i in range(0, len(df)):
+        wf_e = np.copy(det.MakeWaveform(df['r'][i],df['phi'][i],df['z'][i],-1)[0])
+        wf_h = np.copy(det.MakeWaveform(df['r'][i],df['phi'][i],df['z'][i],1)[0])
+        hole.append(np.amax(wf_h))
+        electron.append(np.amax(wf_e))
+        t0.append(t0_estimate(wf_e + wf_h))
+    hole = np.array(hole)
+    electron = np.array(electron)
+    t0 = np.array(t0)
+    energy = df['trap_max']
+  
     plt.figure(1)
-    plt.title("Length-Based Corrected Energy", fontsize=20)
-    plt.xlabel("Energy Centered Around Mean (keV)")
-    (mu, sigma) = norm.fit(ecorr)
-    n, bins, patches = plt.hist(ecorr, 12, lw=4, histtype="step",normed=1, color='gray', alpha=1)
-    y = mlab.normpdf( bins2, mu, sigma)
-    l = plt.plot(bins2, y, 'r', linewidth=2, linestyle='--',color='mediumblue', label='Length-Based Correction, FWHM: 2.70 keV')
-    plt.legend(shadow=True, fancybox=True, loc='upper right', prop={'size': 10},)
-    plt.xlim(-4, 4)
-
+    plt.scatter(energy, df['drift_time']/np.amax(df['drift_time']))
+    slope, intercept, r_value, p_value, std_err = stats.linregress(df['drift_time'], energy)
+    print(r_value)
     plt.figure(2)
-    plt.title("Time-Based Corrected Energy", fontsize=20)
-    plt.xlabel("Energy Centered Around Mean (keV)")
-    (mu, sigma) = norm.fit(ecorrt)
-    n, bins, patches = plt.hist(ecorrt, 12, lw=4, histtype="step", normed=1, color='gray', alpha=1)
-    y = mlab.normpdf( bins2, mu, sigma)
-    l = plt.plot(bins2, y, 'g', linewidth=2, linestyle='--', color='mediumblue', label='Time-Based Correction, FWHM: 3.17 keV')
-    plt.legend(shadow=True, fancybox=True, loc='upper right', prop={'size': 10},)
-    plt.xlim(-4, 4)
-
-    plt.figure(3)
-    plt.title("Measured Energy Distribution", fontsize=20)
-    plt.xlabel("Energy Centered Around Mean (keV)")
-    (mu, sigma) = norm.fit(energy)
-    n, bins, patches = plt.hist(energy, 12, lw=4, histtype="step", normed=1, color='gray', alpha=1)
-    y = mlab.normpdf( bins2, mu, sigma)
-    l = plt.plot(bins2, y, 'b', linewidth=2, linestyle='--', color='mediumblue', label='No Correction, FWHM: 3.89 keV')
-    plt.xlim(-4, 4)
-    plt.legend(shadow=True, fancybox=True, loc='upper right', prop={'size': 10},)
-    #plt.title("Energy Resolution @2614 keV")
-    #plt.xlabel("Energy Centered at Mean")
+    plt.scatter(energy, df['sim_hole_drift_time']/np.amax(df['sim_hole_drift_time']))
+    slope, intercept, r_value, p_value, std_err = stats.linregress(df['sim_hole_drift_time'].astype('float'), energy)
+    print(r_value)
     plt.show()
+    #plt.hist(df['ecal'], histtype='step', lw=2,color='r', bins=15)
+
+#Estimate t0
+def t0_estimate(waveform, baseline=0, median_kernel_size=51, max_t0_adc=100):
+    '''
+    max t0 adc: maximum adc (above baseline) the wf can get to before assuming the wf has started
+    '''
+
+    #if np.amax(waveform)<max_t0_adc:
+    #    return np.nan
+
+    wf_med = signal.medfilt(waveform, kernel_size=median_kernel_size)
+    med_diff = gaussian_filter1d(wf_med, sigma=1, order=1)
+
+    tp05 = calc_timepoint(waveform, percentage=max_t0_adc, baseline=0, do_interp=False, doNorm=False)
+    tp05_rel = np.int(tp05+1)
+    thresh = 5E-5
+    last_under = tp05_rel - np.argmax(med_diff[tp05_rel::-1]<=thresh)
+    if last_under >= len(med_diff)-1:
+        last_under = len(med_diff)-2
+
+    t0 = np.interp(thresh, ( med_diff[last_under],   med_diff[last_under+1] ), (last_under, last_under+1))
+    return t0
+
+#Estimate arbitrary timepoint before max
+def calc_timepoint(waveform, percentage=0.5, baseline=0, do_interp=False, doNorm=True, norm=None):
+    '''
+    percentage: if less than zero, will return timepoint on falling edge
+    do_interp: linear linerpolation of the timepoint...
+    '''
+    wf_norm = (np.copy(waveform) - baseline)
+
+    if doNorm:
+        if norm is None: norm = np.amax(wf_norm)
+        wf_norm /= norm
+
+    def get_tp(perc):
+        if perc > 0:
+            first_over = np.argmax( wf_norm >= perc )
+            if do_interp and first_over > 0:
+                val = np.interp(perc, ( wf_norm[first_over-1],   wf_norm[first_over] ), (first_over-1, first_over))
+            else: val = first_over
+        else:
+            perc = np.abs(perc)
+            above_thresh = wf_norm >= perc
+            last_over = len(wf_norm)-1 - np.argmax(above_thresh[::-1])
+            if do_interp and last_over < len(wf_norm)-1:
+                val = np.interp(perc, (  wf_norm[last_over+1], wf_norm[last_over] ), (last_over+1, last_over))
+            else: val = last_over
+        return val
+
+    if not getattr(percentage, '__iter__', False):
+        return get_tp(percentage)
+    else:
+        vfunc = np.vectorize(get_tp)
+        return vfunc(percentage)
 def getDataFrame():
-    name = "data/chan626data.h5"
+    name = "data/chan692data.h5"
     #name = "data/chan"
     try:
         df = pd.read_hdf(name, key='data')

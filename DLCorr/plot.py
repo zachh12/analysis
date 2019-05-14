@@ -12,7 +12,7 @@ from scipy import stats
 from scipy.stats import norm
 
 bad = [26384.0, 24579.0]
-chan = 626
+chan = 672
 tau = 753
 tau2 = 228
 

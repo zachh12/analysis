@@ -12,10 +12,13 @@ cal = [1173, 1332, 1460]
 adc = [181, 210, 235]
 def main():
     df = pd.read_hdf("t1_run3.h5", key='ORSIS3302DecoderForEnergy')
-    df =  df[(df.index < 30000)]
+    #df =  df[(df.index < 30000)]
+    df =  df[(df.index < 1000)]
+    #exit()
+    #print(df.columns)
     #exit()
     bl_ints, bl_stds, bl_slopes  = getBaselines(df)
-    #t0s = get_t0(df, bl_ints)
+    t0s = get_t0(df, bl_ints)
     wfs = []
     good_t0 = []
     for wf, bl_int, bl_std, bl_slope in zip(df['waveform'], bl_ints, bl_stds, bl_slopes):
@@ -31,6 +34,10 @@ def main():
         wf = wf[0]
         wf = wf - bl_int
         wfs.append(wf)
+    
+    #plt.hist(df['energy_wf'])
+    #plt.show()
+    #exit()
     np.savez('wfs.npz', wfs)
     exit()
     trap_max = trap_maxes(wfs)

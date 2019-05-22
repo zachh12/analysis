@@ -42,7 +42,7 @@ def main():
     plt.title("Energy vs Fitted Drift Time")
     plt.legend(loc='upper right')
     plt.show()
-    exit()
+    #exit()
     printFWHM(df)
     '''
     plt.figure(1)

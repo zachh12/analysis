@@ -8,24 +8,33 @@ from scipy.stats import norm
 from scipy.optimize import curve_fit
 
 def main():
-    plotAll = False
-    #UV("uv_null_1.csv", "uv_sc_1.csv", plotAll, plot=True)
-    #UV("uv_null_2.csv", "uv_sc_2.csv", plotAll, plot=True)
-    Flor("flor_avg.csv")
+    plotAll = True
+    #UV("data/uv_null_1.csv", "data/uv_sc_1.csv", plotAll, plot=True)
+    #UV("data/uv_null_2.csv", "data/uv_sc_2.csv", plotAll, plot=True)
+    Flor("data/flor_avg.csv")
 
     if plotAll:
         plt.xlim(400, 600)
-        plt.show()
+        #plt.show()
 
 def Flor(file):
     wavelength, intensity = read_file(file)
     plt.scatter(wavelength, intensity, s=1)
     #plt.show()
     #expected = (wavelength[np.argmax(intensity)], np.std(intensity), np.amax(intensity), wavelength[np.argmax(intensity)]+20, np.std(intensity), np.amax(intensity)-.1)
-    expected = (444, 14, .08, 424, 8, .08)
-    params, cov = curve_fit(bimodal,wavelength,intensity,expected)
-    print(params[0], params[3])
-    plt.plot(wavelength,bimodal(wavelength,*params), color='r')
+
+    #Bimodal Distribution
+    #expected = (424, 14, .08, 444, 8, .05)
+    #params, cov = curve_fit(bimodal,wavelength,intensity,expected)
+    #plt.plot(wavelength,bimodal(wavelength,*params), color='r')
+    #print(params)
+    #Trimodal Distribution
+    expected = (424, 14, .08, 444, 8, .05, 460, 12, .03)
+    params, cov = curve_fit(trimodal,wavelength,intensity,expected)
+    plt.plot(wavelength,trimodal(wavelength,*params), color='r')
+    print(params[0], params[3], params[6])
+    print(params)
+    plt.xlim(300, 700)
     plt.show()
 
 
@@ -51,6 +60,9 @@ def fit(x, y, plot, c):
         plt.plot(x, y, color=color[c], label=label)
         plt.legend()
     return best_vals[0], best_vals[1], best_vals[2]
+
+def trimodal(x,mu1,sigma1,A1,mu2,sigma2,A2, mu3,sigma3,A3):
+    return gaussian(x,mu1,sigma1,A1)+gaussian(x,mu2,sigma2,A2)+gaussian(x,mu3,sigma3,A3)
 
 def bimodal(x,mu1,sigma1,A1,mu2,sigma2,A2):
     return gaussian(x,mu1,sigma1,A1)+gaussian(x,mu2,sigma2,A2)

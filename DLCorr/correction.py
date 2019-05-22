@@ -23,7 +23,7 @@ def main():
     #cut = (np.square(df['r']) < 1050)
 
 
-    cut =  (df['ecal'] > 800) & (df['ecal'] < 1400)
+    cut =  (df['ecal'] > 2000) #& (df['ecal'] < 1400)
     df = df[cut]
     plt.hist(df['ecal'])
     plt.show()

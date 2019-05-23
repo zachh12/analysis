@@ -6,49 +6,77 @@ from scipy import optimize
 from scipy import asarray as ar,exp
 from scipy.stats import norm
 from scipy.optimize import curve_fit
+import pandas as pd
+import seaborn as sns; sns.set()
 
 def main():
-    plotAll = True
+    cols = ["wavelength", "intensity", "fit_info"]
+    df = pd.DataFrame(columns=cols)
+
+    # 0 == Flor, 1 == UV
+    mode = 0
+    files = ["data/flor_avg.csv"]
+
+    for file in files:
+        wavelength, intensity = read_file(file)
+        if mode == 0:
+            params = FitFlor(wavelength, intensity)
+            df.loc[len(df)] = wavelength, intensity, params
+        elif mode == 1:
+            params = FitUV(wavelength, intensity)
+            df.loc[len(df)] = wavelength, intensity, params
+        else:
+            print("Incorrect Parsing Mode")
+            exit()
+
+    if mode == 0:
+        plotFlor(df)
+    elif mode == 1:
+        plotUV(df)
+    else:
+        print("Incorrect Parsing Mode")
+        exit()
+
     #UV("data/uv_null_1.csv", "data/uv_sc_1.csv", plotAll, plot=True)
     #UV("data/uv_null_2.csv", "data/uv_sc_2.csv", plotAll, plot=True)
-    Flor("data/flor_avg.csv")
+    #LoadFlor("data/flor_avg.csv")
 
-    if plotAll:
-        plt.xlim(400, 600)
-        #plt.show()
-
-def Flor(file):
-    wavelength, intensity = read_file(file)
-    plt.scatter(wavelength, intensity, s=1)
-    #plt.show()
-    #expected = (wavelength[np.argmax(intensity)], np.std(intensity), np.amax(intensity), wavelength[np.argmax(intensity)]+20, np.std(intensity), np.amax(intensity)-.1)
+def FitFlor(wavelength, intensity):
 
     #Bimodal Distribution
     #expected = (424, 14, .08, 444, 8, .05)
     #params, cov = curve_fit(bimodal,wavelength,intensity,expected)
     #plt.plot(wavelength,bimodal(wavelength,*params), color='r')
-    #print(params)
+
     #Trimodal Distribution
     expected = (424, 14, .08, 444, 8, .05, 460, 12, .03)
     params, cov = curve_fit(trimodal,wavelength,intensity,expected)
+    #plt.plot(wavelength,trimodal(wavelength,*params), color='r')
+    #plt.xlim(300, 700)
+    #plt.show()
+    return params
+
+def plotFlor(wavelength, intensity, params):
     plt.plot(wavelength,trimodal(wavelength,*params), color='r')
-    print(params[0], params[3], params[6])
-    print(params)
     plt.xlim(300, 700)
     plt.show()
 
-
-def UV(file1, file2, plotAll=False, plot=False):
+def FitUV(file1, file2, plotAll=False, plot=False):
     wavelength, intensity = read_file(file1)
     wavelength2, intensity2 = read_file(file2)
     mean, std, amp = fit(wavelength, intensity, plot, 0)
     mean2, std, amp2 = fit(wavelength2, intensity2, plot, 1)
     print("Transmittance @", '%.3f'%mean + ":", '%.3f'%(amp2 / amp))
-
+    if (plot):
+        plt.scatter(wavelength, intensity, s=1)
+        plt.scatter(wavelength2, intensity2, s=1)
     if ((plot) & (not plotAll)):
         plt.xlim(400, 550)
         plt.show()
 
+def plotFlor(wavelength, intensity, params):
+    print("Todo")
+    
 def fit(x, y, plot, c):
     color = ['b', 'g']
     init_vals = [x[np.argmax(y)], np.std(y), np.amax(y)]

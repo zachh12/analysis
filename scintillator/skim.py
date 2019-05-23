@@ -15,7 +15,7 @@ def main():
 
     # 0 == Flor, 1 == UV
     mode = 0
-    files = ["data/flor_avg.csv"]
+    files = ["data/flor_avg.csv"]#, "data/flor.csv"]
 
     for file in files:
         wavelength, intensity = read_file(file)
@@ -54,10 +54,9 @@ def FitFlor(wavelength, intensity):
     return params
 
 def plotFlor(df):
-    for spectrum in df:
-        print(spectrum)
-        exit()
-        wavelength, intensity, params = df['wavelength'][0], df['intensity'][0], df['fit_info'][0]
+
+    for index, row in df.iterrows():
+        wavelength, intensity, params = row[0], row[1], row[2]
         plt.scatter(wavelength, intensity, s=1)
         plt.plot(wavelength,trimodal(wavelength,*params), color='r')
         plt.xlim(300, 700)

@@ -56,7 +56,9 @@ def FitFlor(wavelength, intensity):
     #plt.show()
     return params
 
-def plotFlor(wavelength, intensity, params):
+def plotFlor(df):
+    wavelength, intensity, params = df['wavelength'][0], df['intensity'][0], df['fit_info'][0]
+    plt.scatter(wavelength, intensity, s=1)
     plt.plot(wavelength,trimodal(wavelength,*params), color='r')
     plt.xlim(300, 700)
     plt.show()
@@ -74,9 +76,9 @@ def FitUV(file1, file2, plotAll=False, plot=False):
         plt.xlim(400, 550)
         plt.show()
 
-def plotFlor(wavelength, intensity, params):
+def plotUV(wavelength, intensity, params):
     print("Todo")
-    
+
 def fit(x, y, plot, c):
     color = ['b', 'g']
     init_vals = [x[np.argmax(y)], np.std(y), np.amax(y)]

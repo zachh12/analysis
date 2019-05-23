@@ -9,6 +9,8 @@ from scipy.optimize import curve_fit
 import pandas as pd
 import seaborn as sns; sns.set()
 
+#TODO Error Bars, Result summary for each type
+
 def main():
     cols = ["wavelength", "intensity", "fit_info"]
     df = pd.DataFrame(columns=cols)
@@ -16,26 +18,22 @@ def main():
     # 0 == Flor, 1 == UV
     mode = 0
     files = ["data/flor_avg.csv"]#, "data/flor.csv"]
-
-    for file in files:
-        wavelength, intensity = read_file(file)
-        if mode == 0:
+    if mode == 0:
+        for file in files:
+            wavelength, intensity = read_file(file)
             params = FitFlor(wavelength, intensity)
             df.loc[len(df)] = wavelength, intensity, params
-        elif mode == 1:
+        #Plot
+        plotFlor(df)
+
+    elif mode == 1:
+        for file in files:
+            wavelength, intensity = read_file(file)
             params = FitUV(wavelength, intensity)
             df.loc[len(df)] = wavelength, intensity, params
-        else:
-            print("Incorrect Parsing Mode")
-            exit()
+        #Plot
 
-    if mode == 0:
-        plotFlor(df)
-    elif mode == 1:
-        plotUV(df)
-    else:
-        print("Incorrect Parsing Mode")
-        exit()
+
 
     #UV("data/uv_null_1.csv", "data/uv_sc_1.csv", plotAll, plot=True)
     #UV("data/uv_null_2.csv", "data/uv_sc_2.csv", plotAll, plot=True)
@@ -54,7 +52,6 @@ def FitFlor(wavelength, intensity):
     return params
 
 def plotFlor(df):
-
     for index, row in df.iterrows():
         wavelength, intensity, params = row[0], row[1], row[2]
         plt.scatter(wavelength, intensity, s=1)
@@ -62,32 +59,21 @@ def plotFlor(df):
         plt.xlim(300, 700)
     plt.show()
 
-def FitUV(file1, file2, plotAll=False, plot=False):
-    wavelength, intensity = read_file(file1)
-    wavelength2, intensity2 = read_file(file2)
-    mean, std, amp = fit(wavelength, intensity, plot, 0)
-    mean2, std, amp2 = fit(wavelength2, intensity2, plot, 1)
-    print("Transmittance @", '%.3f'%mean + ":", '%.3f'%(amp2 / amp))
-    if (plot):
-        plt.scatter(wavelength, intensity, s=1)
-        plt.scatter(wavelength2, intensity2, s=1)
-    if ((plot) & (not plotAll)):
-        plt.xlim(400, 550)
-        plt.show()
+def FitUV(wavelength, intensity, wavelength2, intensity2):
+    mean, std, amp = fit(wavelength, intensity)
+    params = [mean, std, amp]
+    return params
 
 def plotUV(wavelength, intensity, params):
     print("Todo")
 
-def fit(x, y, plot, c):
-    color = ['b', 'g']
+def fit(x, y):
     init_vals = [x[np.argmax(y)], np.std(y), np.amax(y)]
     best_vals, covar = curve_fit(gaussian, x, y, p0=init_vals)
-    x = np.linspace(np.min(x), np.max(x), 1000)
-    y = gaussian(x, best_vals[0], best_vals[1], best_vals[2])
-    if plot:
-        label = "Wavelength: " + str('%.1f'%best_vals[0]) + "\nIntensity: " + str('%.3f'%best_vals[2])
-        plt.plot(x, y, color=color[c], label=label)
-        plt.legend()
+    #if plot:
+    #    label = "Wavelength: " + str('%.1f'%best_vals[0]) + "\nIntensity: " + str('%.3f'%best_vals[2])
+    #    plt.plot(x, y, color=color[c], label=label)
+    #    plt.legend()
     return best_vals[0], best_vals[1], best_vals[2]
 
 def trimodal(x,mu1,sigma1,A1,mu2,sigma2,A2, mu3,sigma3,A3):

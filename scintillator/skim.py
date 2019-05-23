@@ -46,21 +46,21 @@ def FitFlor(wavelength, intensity):
     #Bimodal Distribution
     #expected = (424, 14, .08, 444, 8, .05)
     #params, cov = curve_fit(bimodal,wavelength,intensity,expected)
-    #plt.plot(wavelength,bimodal(wavelength,*params), color='r')
 
     #Trimodal Distribution
     expected = (424, 14, .08, 444, 8, .05, 460, 12, .03)
     params, cov = curve_fit(trimodal,wavelength,intensity,expected)
-    #plt.plot(wavelength,trimodal(wavelength,*params), color='r')
-    #plt.xlim(300, 700)
-    #plt.show()
+
     return params
 
 def plotFlor(df):
-    wavelength, intensity, params = df['wavelength'][0], df['intensity'][0], df['fit_info'][0]
-    plt.scatter(wavelength, intensity, s=1)
-    plt.plot(wavelength,trimodal(wavelength,*params), color='r')
-    plt.xlim(300, 700)
+    for spectrum in df:
+        print(spectrum)
+        exit()
+        wavelength, intensity, params = df['wavelength'][0], df['intensity'][0], df['fit_info'][0]
+        plt.scatter(wavelength, intensity, s=1)
+        plt.plot(wavelength,trimodal(wavelength,*params), color='r')
+        plt.xlim(300, 700)
     plt.show()
 
 def FitUV(file1, file2, plotAll=False, plot=False):

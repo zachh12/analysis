@@ -17,14 +17,66 @@ def main():
 
     # 0 == Flor, 1 == UV
     mode = 0
-    files = ["data/flor_avg.csv"]#, "data/flor.csv"]
+    #files = ["data/fl_det_1.csv", "data/fl_det_2.csv", "data/fl_det_3.csv", "data/fl_det_4.csv", "data/fl_det_5.csv"]
+    #files2 = ["data/fl_stored_1.csv", "data/fl_stored_2.csv", "data/fl_stored_3.csv", "data/fl_stored_4.csv", "data/fl_stored_5.csv"]
+    files = ["data/oil_1.csv", "data/oil_2.csv"]
+
+    means = []
+    stds = []
+    amps = []
     if mode == 0:
         for file in files:
+
             wavelength, intensity = read_file(file)
             params = FitFlor(wavelength, intensity)
             df.loc[len(df)] = wavelength, intensity, params
+            plt.scatter(wavelength, intensity, alpha=.1)
+            plt.plot(wavelength,testmodal(wavelength,*params), color="r")
+
+            means.append([params[0], params[3]])#, params[6], params[9], params[12]])
+            stds.append([params[1], params[4]])#, params[7], params[10], params[13]])
+            amps.append([params[2], params[5]])#, params[8], params[11], params[14]])
+        plt.ylim(-.02, .05)
+        plt.xlim(200, 600)
+        plt.show()
+        exit()
         #Plot
-        plotFlor(df)
+        mean0, mean1, mean2, mean3, mean4 = [], [], [], [], []
+        std0, std1, std2, std3, std4 = [], [], [], [], []
+        amp0, amp1, amp2, amp3, amp4 = [], [], [], [], []
+
+        for i in range(0, 2):
+            mean0.append(means[i][0])
+            mean1.append(means[i][1])
+            #mean2.append(means[i][2])
+            #mean3.append(means[i][3])
+            #mean4.append(means[i][4])
+            std0.append(stds[i][0])
+            std1.append(stds[i][1])
+            #std2.append(stds[i][2])
+            #std3.append(stds[i][3])
+            #std4.append(stds[i][4])
+            amp0.append(amps[i][0])
+            amp1.append(amps[i][1])
+            #amp2.append(amps[i][2])
+            ##amp3.append(amps[i][3])
+            #amp4.append(amps[i][4])
+        print(np.mean(mean0))
+        params = [np.mean(mean0), np.mean(std0),np.mean(amp0), np.mean(mean1), np.mean(std1), 
+            np.mean(amp1), np.mean(mean2), np.mean(std2), np.mean(amp2)], np.mean(mean3), np.mean(std3), np.mean(amp3), np.mean(mean4), np.mean(std4), np.mean(amp4)
+        wavelength = np.linspace(300, 600, 10000)
+        print(params)
+        exit()
+        plt.plot(wavelength,testmodal(wavelength,*params))#, color='r')
+        plt.show()
+        exit()
+
+        #Save
+        np.savetxt( "Params_oil.txt", params)
+        df.to_hdf("oil.h5", key='data')
+        #print(params)
+        plt.show()
+        #plotFlor(df)
 
     elif mode == 1:
         for file in files:
@@ -34,11 +86,6 @@ def main():
         #Plot
 
 
-
-    #UV("data/uv_null_1.csv", "data/uv_sc_1.csv", plotAll, plot=True)
-    #UV("data/uv_null_2.csv", "data/uv_sc_2.csv", plotAll, plot=True)
-    #LoadFlor("data/flor_avg.csv")
-
 def FitFlor(wavelength, intensity):
 
     #Bimodal Distribution
@@ -46,16 +93,16 @@ def FitFlor(wavelength, intensity):
     #params, cov = curve_fit(bimodal,wavelength,intensity,expected)
 
     #Trimodal Distribution
-    expected = (424, 14, .08, 444, 8, .05, 460, 12, .03)
-    params, cov = curve_fit(trimodal,wavelength,intensity,expected)
+    expected = (406, 10, .35, 430, 8, .5, 455, 12, .4, 483, 12, .21, 530, 12, .1)
+    params, cov = curve_fit(testmodal,wavelength,intensity,expected)
 
     return params
 
 def plotFlor(df):
     for index, row in df.iterrows():
         wavelength, intensity, params = row[0], row[1], row[2]
-        plt.scatter(wavelength, intensity, s=1)
-        plt.plot(wavelength,trimodal(wavelength,*params), color='r')
+        #plt.scatter(wavelength, intensity, s=1)
+        plt.plot(wavelength,testmodal(wavelength,*params))#, color='r')
         plt.xlim(300, 700)
     plt.show()
 
@@ -76,6 +123,9 @@ def fit(x, y):
     #    plt.legend()
     return best_vals[0], best_vals[1], best_vals[2]
 
+def testmodal(x,mu1,sigma1,A1,mu2,sigma2,A2, mu3,sigma3,A3, mu4,sigma4,A4, mu5,sigma5,A5):
+    return gaussian(x,mu1,sigma1,A1)+gaussian(x,mu2,sigma2,A2)+gaussian(x,mu3,sigma3,A3)+gaussian(x,mu4,sigma4,A4)+gaussian(x,mu5,sigma5,A5)
+
 def trimodal(x,mu1,sigma1,A1,mu2,sigma2,A2, mu3,sigma3,A3):
     return gaussian(x,mu1,sigma1,A1)+gaussian(x,mu2,sigma2,A2)+gaussian(x,mu3,sigma3,A3)
 
@@ -87,6 +137,7 @@ def gaussian(x, mu, sigma, amp):
 
 def read_file(name):
     raw = []
+
     with open(name) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         line_count = 0

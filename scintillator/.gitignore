@@ -1,3 +1,6 @@
 *.csv
 data/
+*.txt
+*.h5
+*.png
 __pycache__/

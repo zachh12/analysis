@@ -13,7 +13,7 @@ import seaborn as sns; sns.set()
 
 def main():
 
-    plt.figure(figsize=(10,5))
+    plt.figure(figsize=(12,7))
     params_det = np.loadtxt("Params_det.txt")
     df_det = pd.read_hdf("det.h5", key="data")
     params_stored = np.loadtxt("Params_stored.txt")
@@ -44,13 +44,16 @@ def main():
         errorStoreLow.append(np.mean(error2) - np.amin(error2))
         errorStoreHigh.append(np.amax(error2) - np.mean(error2))
 
-    plt.plot(full,testmodal(full,*params_det), alpha=.9, color="r", label="Detector Sample", linewidth=4)
-    plt.errorbar(wavelength, testmodal(wavelength,*params_det), xerr=0, yerr=[errorDetLow, errorDetHigh], ls='none', color='r')
-    plt.errorbar(wavelength2, testmodal(wavelength2,*params_stored), xerr=0, yerr=[errorStoreLow, errorStoreHigh], ls='none', color='b')
-    plt.plot(full,testmodal(full,*params_stored), alpha=.9, color="b", label="Stored Sample", linewidth=4)
-    plt.xlim(375, 520)
-    #plt.ylim(.3, .7)
-    plt.xlabel("Wavelength (nm)")# \n More info")
+    plt.plot(full,testmodal(full,*params_det), alpha=1, color="r", label="Detector Sample", linewidth=2)
+    plt.errorbar(wavelength, testmodal(wavelength,*params_det), xerr=2, yerr=[errorDetLow, errorDetHigh], fmt='.', color='r')
+    plt.plot(full,testmodal(full,*params_stored), alpha=1, color="b", label="Stored Sample", linewidth=2)
+    plt.errorbar(wavelength2, testmodal(wavelength2,*params_stored), xerr=2, yerr=[errorStoreLow, errorStoreHigh], fmt='.', color='b')
+
+
+    plt.title("PROSPECT Scintillator Emission Spectrum")
+    txt = "Thorlabs CCS200 spectrophotometer, Hamamatsu Model XXX Xe flash lamp, 1cm x 1cm quartz cuvette, spectrum at taken at 90 degrees detector-source angle, 10,000us integration time,  etc" 
+    plt.xlim(350, 550)
+    plt.xlabel("Wavelength (nm) \n")
     plt.ylabel("Intensity (arb)")
     plt.legend()
 

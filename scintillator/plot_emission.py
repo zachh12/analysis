@@ -13,7 +13,6 @@ import seaborn as sns; sns.set()
 
 def main():
 
-    plt.figure(figsize=(12,7))
     params_det = np.loadtxt("Params_det.txt")
     df_det = pd.read_hdf("det.h5", key="data")
     params_stored = np.loadtxt("Params_stored.txt")
@@ -22,33 +21,27 @@ def main():
     wavelength = np.linspace(300, 600, 40)
     wavelength2 = np.linspace(302, 605, 40)
     full = np.linspace(300, 600, 300)
-    #wavelength2 = wavelength
 
-    model = []
-    model2 = []
-    errorDet, errorStore = np.array([]), np.array([])
+    model, model2 = [], []
     errorDetLow, errorDetHigh = [], []
     errorStoreLow, errorStoreHigh = [], []
     for i in range(0, 5):
-        model.append(testmodal(wavelength,*df_det['fit_info'][i]))
-        model2.append(testmodal(wavelength2,*df_stored['fit_info'][i]))
+        model.append(pentmodal(wavelength,*df_det['fit_info'][i]))
+        model2.append(pentmodal(wavelength2,*df_stored['fit_info'][i]))
 
     for i in range(0, len(wavelength)):
-        test = np.empty(2)
-        test.fill(wavelength[i])
         error = [model[0][i], model[1][i], model[2][i], model[3][i], model[4][i]]
         errorDetLow.append(np.mean(error) - np.amin(error))
         errorDetHigh.append(np.amax(error) - np.mean(error))
-        test.fill(wavelength2[i])
         error2 = [model2[0][i], model2[1][i], model2[2][i], model2[3][i], model2[4][i]]
         errorStoreLow.append(np.mean(error2) - np.amin(error2))
         errorStoreHigh.append(np.amax(error2) - np.mean(error2))
 
-    plt.plot(full,testmodal(full,*params_det), alpha=1, color="r", label="Detector Sample", linewidth=2)
-    plt.errorbar(wavelength, testmodal(wavelength,*params_det), xerr=2, yerr=[errorDetLow, errorDetHigh], fmt='.', color='r')
-    plt.plot(full,testmodal(full,*params_stored), alpha=1, color="b", label="Stored Sample", linewidth=2)
-    plt.errorbar(wavelength2, testmodal(wavelength2,*params_stored), xerr=2, yerr=[errorStoreLow, errorStoreHigh], fmt='.', color='b')
-
+    plt.figure(figsize=(12,7))
+    plt.plot(full, pentmodal(full,*params_det), alpha=1, color="r", label="Detector Sample", linewidth=2)
+    plt.errorbar(wavelength, pentmodal(wavelength,*params_det), xerr=2, yerr=[errorDetLow, errorDetHigh], fmt='.', color='r')
+    plt.plot(full, pentmodal(full,*params_stored), alpha=1, color="b", label="Stored Sample", linewidth=2)
+    plt.errorbar(wavelength2, pentmodal(wavelength2,*params_stored), xerr=2, yerr=[errorStoreLow, errorStoreHigh], fmt='.', color='b')
 
     plt.title("PROSPECT Scintillator Emission Spectrum")
     txt = "Thorlabs CCS200 spectrophotometer, Hamamatsu Model XXX Xe flash lamp, 1cm x 1cm quartz cuvette, spectrum at taken at 90 degrees detector-source angle, 10,000us integration time,  etc" 
@@ -61,34 +54,11 @@ def main():
     plt.show()
 
 
-def plotFlor(df):
-    for index, row in df.iterrows():
-        wavelength, intensity, params = row[0], row[1], row[2]
-        #plt.scatter(wavelength, intensity, s=1)
-        plt.plot(wavelength,testmodal(wavelength,*params))#, color='r')
-        plt.xlim(300, 700)
-    plt.show()
-
-
-
-def fit(x, y):
-    init_vals = [x[np.argmax(y)], np.std(y), np.amax(y)]
-    best_vals, covar = curve_fit(gaussian, x, y, p0=init_vals)
-    #if plot:
-    #    label = "Wavelength: " + str('%.1f'%best_vals[0]) + "\nIntensity: " + str('%.3f'%best_vals[2])
-    #    plt.plot(x, y, color=color[c], label=label)
-    #    plt.legend()
-    return best_vals[0], best_vals[1], best_vals[2]
-
-def testmodal(x,mu1,sigma1,A1,mu2,sigma2,A2, mu3,sigma3,A3, mu4,sigma4,A4, mu5,sigma5,A5):
+def pentmodal(x,mu1,sigma1,A1,mu2,sigma2,A2, mu3,sigma3,A3, mu4,sigma4,A4, mu5,sigma5,A5):
     return gaussian(x,mu1,sigma1,A1)+gaussian(x,mu2,sigma2,A2)+gaussian(x,mu3,sigma3,A3)+gaussian(x,mu4,sigma4,A4)+gaussian(x,mu5,sigma5,A5)
-
-
 
 def gaussian(x, mu, sigma, amp):
     return amp * exp(-(x-mu)**2 / sigma)
-
-
 
 if __name__ == "__main__":
     main()

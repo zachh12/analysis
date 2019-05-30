@@ -10,11 +10,11 @@ from waffle.management import LocalFitManager, FitConfiguration
 
 chan_dict = {
 600: "B8482",
-626: "P42574A", #All there
+626: "P42574A",
 640:"P42665A",
 648:"P42664A",
-672: "P42661A", #Mostly good
-692: "B8474" #Have this too
+672: "P42661A",
+692: "B8474"
 }
 
 def main(chan, doPlot=False):

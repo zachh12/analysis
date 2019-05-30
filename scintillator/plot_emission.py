@@ -9,8 +9,6 @@ from scipy.optimize import curve_fit
 import pandas as pd
 import seaborn as sns; sns.set()
 
-#TODO Error Bars, Result summary for each type
-
 def main():
 
     params_det = np.loadtxt("Params_det.txt")
@@ -25,18 +23,25 @@ def main():
     model, model2 = [], []
     errorDetLow, errorDetHigh = [], []
     errorStoreLow, errorStoreHigh = [], []
-    for i in range(0, 5):
+    nums = [0, 1, 2, 3, 4]
+    for i in nums:
         model.append(pentmodal(wavelength,*df_det['fit_info'][i]))
+    for i in range(0, 4):
         model2.append(pentmodal(wavelength2,*df_stored['fit_info'][i]))
 
     for i in range(0, len(wavelength)):
         error = [model[0][i], model[1][i], model[2][i], model[3][i], model[4][i]]
         errorDetLow.append(np.mean(error) - np.amin(error))
         errorDetHigh.append(np.amax(error) - np.mean(error))
-        error2 = [model2[0][i], model2[1][i], model2[2][i], model2[3][i], model2[4][i]]
+        error2 = [model2[0][i], model2[1][i], model2[2][i], model2[3][i]]#, model2[4][i]]
         errorStoreLow.append(np.mean(error2) - np.amin(error2))
         errorStoreHigh.append(np.amax(error2) - np.mean(error2))
 
+    plt.figure(figsize=(12,7))
+    plt.plot(full, pentmodal(full,*params_det)-pentmodal(full,*params_stored))
+    plt.title("Average Fluorescence Difference")
+    plt.xlabel("Wavelength (nm)")
+    plt.ylabel("Intensity (arb)")
     plt.figure(figsize=(12,7))
     plt.plot(full, pentmodal(full,*params_det), alpha=1, color="r", label="Detector Sample", linewidth=2)
     plt.errorbar(wavelength, pentmodal(wavelength,*params_det), xerr=2, yerr=[errorDetLow, errorDetHigh], fmt='.', color='r')

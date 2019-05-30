@@ -13,12 +13,16 @@ from waffle.models import OvershootFilterModel,OscillationFilterModel, TrappingM
 from siggen import PPC
 
 chan_dict = {
+580: "P42661C",
 600: "B8482",
 626: "P42574A",
-640:"P42665A",
-648:"P42664A",
+630: "P42661B",
 672: "P42661A",
-692: "B8474"
+680: "B8477",
+690: "P42662A",
+692: "B8474",
+694: "B8465",
+1106: "B8594",
 }
 
 def main(wf, doPlot=False):
@@ -26,12 +30,12 @@ def main(wf, doPlot=False):
     align_point = 0.95
     wf_idx = int(wf)
 
-    chan = 672
+    chan = 626
     #chan = 692
     directory = "chan{}_wfs".format(chan)
 
     #wf_file = "training_data/chan{}_2614wfs.npz".format(chan)
-    wf_file = "training_data/datarun11510-11549chan672_250wfs.npz"
+    wf_file = "training_data/chan626_8wfs.npz"
     conf_name = "{}.conf".format( chan_dict[chan] )
 
     datadir= os.environ['DATADIR']
@@ -41,14 +45,14 @@ def main(wf, doPlot=False):
     detector = PPC( conf_file, wf_padding=100)
 
     vm = VelocityModel(include_beta=False)
-    #hp1 = HiPassFilterModel(detector)
+    hp1 = HiPassFilterModel(detector)
     #hp2 = HiPassFilterModel(detector)
     fs = FirstStageFilterModel(detector)
     al = AntialiasingFilterModel(detector)
     oshoot = OvershootFilterModel(detector)
     osc = OscillationFilterModel(detector)
     im = ImpurityModelEnds(detector)
-    #tm = TrappingModel()
+    tm = TrappingModel()
 
     #lp = LowPassFilterModel(detector)
     #hp = HiPassFilterModel(detector)
@@ -81,6 +85,8 @@ def main(wf, doPlot=False):
     oshoot.apply_to_detector([-5.2901815, 1.80], detector)
     osc.apply_to_detector([-2.181, 7, -2.2, 5.], detector)
     im.apply_to_detector([-.12, -1.54175], detector)
+
+
     data = np.load(wf_file, encoding="latin1")
     wfs = data['wfs']
 

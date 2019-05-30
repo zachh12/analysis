@@ -18,62 +18,74 @@ def main():
     # 0 == Flor, 1 == UV
     mode = 0
     #files = ["data/fl_det_1.csv", "data/fl_det_2.csv", "data/fl_det_3.csv", "data/fl_det_4.csv", "data/fl_det_5.csv"]
-    #files2 = ["data/fl_stored_1.csv", "data/fl_stored_2.csv", "data/fl_stored_3.csv", "data/fl_stored_4.csv", "data/fl_stored_5.csv"]
-    files = ["data/oil_1.csv", "data/oil_2.csv"]
-
+    files = ["data/fl_stored_1.csv", "data/fl_stored_2.csv", "data/fl_stored_4.csv", "data/fl_stored_5.csv"]
+    files = ["data/oil_1.csv", "data/oil_2.csv", "data/fl_det_1.csv"]
+    #files = ["data/fl_det_1.csv", "data/fl_stored_1.csv", "data/oil_1.csv"]
+    #files = ['data/fl_det_5.csv', 'data/fl_stored_5.csv', 'data/fl_det_4.csv', 'data/fl_stored_4.csv']
+    #files = ['data/fl_stored_1.csv', 'data/fl_det_1.csv','data/fl_stored_2.csv', 'data/fl_det_2.csv', 'data/fl_det_3.csv','data/fl_stored_4.csv', 'data/fl_det_4.csv','data/fl_stored_5.csv', 'data/fl_det_5.csv']
+    #files = ['data/fl_det_5.csv', 'data/fl_stored_1.csv', 'data/oil_1.csv']
     means = []
     stds = []
     amps = []
+    wavelength, intensity = read_file(files[0])
+    plt.scatter(wavelength, intensity, s=1)
+    plt.title("Mineral Oil Fluorescence")
+    plt.ylabel("Intensity (arb)")
+    plt.xlabel("Wavelength (nm)")
+    plt.ylim(-.01, .04)
+    plt.show()
+    exit()
     if mode == 0:
         for file in files:
 
             wavelength, intensity = read_file(file)
             params = FitFlor(wavelength, intensity)
             df.loc[len(df)] = wavelength, intensity, params
-            plt.scatter(wavelength, intensity, alpha=.1)
+            plt.scatter(wavelength, intensity, alpha=1, s=1)
             plt.plot(wavelength,testmodal(wavelength,*params), color="r")
+            means.append([params[0], params[3], params[6], params[9], params[12]])
+            stds.append([params[1], params[4], params[7], params[10], params[13]])
+            amps.append([params[2], params[5], params[8], params[11], params[14]])
 
-            means.append([params[0], params[3]])#, params[6], params[9], params[12]])
-            stds.append([params[1], params[4]])#, params[7], params[10], params[13]])
-            amps.append([params[2], params[5]])#, params[8], params[11], params[14]])
-        plt.ylim(-.02, .05)
-        plt.xlim(200, 600)
+        #plt.ylim(-.02, .06)
+        #plt.xlim(300, 500)
         plt.show()
-        exit()
+        #exit()
         #Plot
         mean0, mean1, mean2, mean3, mean4 = [], [], [], [], []
-        std0, std1, std2, std3, std4 = [], [], [], [], []
-        amp0, amp1, amp2, amp3, amp4 = [], [], [], [], []
-
+        std0, std1, std2, std3, std4= [], [], [], [], []
+        amp0, amp1, amp2, amp3, amp4= [], [], [], [], []
+        print(means)
+        #exit()
         for i in range(0, 2):
             mean0.append(means[i][0])
             mean1.append(means[i][1])
-            #mean2.append(means[i][2])
-            #mean3.append(means[i][3])
-            #mean4.append(means[i][4])
+            mean2.append(means[i][2])
+            mean3.append(means[i][3])
+            mean4.append(means[i][4])
             std0.append(stds[i][0])
             std1.append(stds[i][1])
-            #std2.append(stds[i][2])
-            #std3.append(stds[i][3])
-            #std4.append(stds[i][4])
+            std2.append(stds[i][2])
+            std3.append(stds[i][3])
+            std4.append(stds[i][4])
             amp0.append(amps[i][0])
             amp1.append(amps[i][1])
-            #amp2.append(amps[i][2])
-            ##amp3.append(amps[i][3])
-            #amp4.append(amps[i][4])
+            amp2.append(amps[i][2])
+            amp3.append(amps[i][3])
+            amp4.append(amps[i][4])
         print(np.mean(mean0))
-        params = [np.mean(mean0), np.mean(std0),np.mean(amp0), np.mean(mean1), np.mean(std1), 
-            np.mean(amp1), np.mean(mean2), np.mean(std2), np.mean(amp2)], np.mean(mean3), np.mean(std3), np.mean(amp3), np.mean(mean4), np.mean(std4), np.mean(amp4)
+        params = [np.mean(mean0), np.mean(std0),np.mean(amp0), np.mean(mean1), np.mean(std1), np.mean(amp1), np.mean(mean2), np.mean(std2), np.mean(amp2), np.mean(mean3), np.mean(std3), np.mean(amp3), np.mean(amp4), np.mean(mean4), np.mean(std4)]
+            #, np.mean(mean4), np.mean(std4), np.mean(amp4)
         wavelength = np.linspace(300, 600, 10000)
         print(params)
-        exit()
+        #exit()
         plt.plot(wavelength,testmodal(wavelength,*params))#, color='r')
         plt.show()
-        exit()
+        #exit()
 
         #Save
-        np.savetxt( "Params_oil.txt", params)
-        df.to_hdf("oil.h5", key='data')
+        np.savetxt( "Params_stored.txt", params)
+        df.to_hdf("Stored.h5", key='data')
         #print(params)
         plt.show()
         #plotFlor(df)

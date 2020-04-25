@@ -17,36 +17,49 @@ def main():
 
     # 0 == Flor, 1 == UV
     mode = 0
-    #files = ["data/fl_det_1.csv", "data/fl_det_2.csv", "data/fl_det_3.csv", "data/fl_det_4.csv", "data/fl_det_5.csv"]
-    files = ["data/fl_stored_1.csv", "data/fl_stored_2.csv", "data/fl_stored_4.csv", "data/fl_stored_5.csv"]
-    files = ["data/oil_1.csv", "data/oil_2.csv", "data/fl_det_1.csv"]
+    files = ["data/fl_det_1.csv", "data/fl_det_2.csv", "data/fl_det_3.csv", "data/fl_det_4.csv", "data/fl_det_5.csv"]
+    #files = ["data/fl_stored_1.csv", "data/fl_stored_2.csv", "data/fl_stored_3.csv", "data/fl_stored_4.csv", "data/fl_stored_5.csv"]
+    #files = ["data/oil_1.csv", "data/oil_2.csv", "data/fl_det_1.csv", "data/fl_stored_1.csv"]
     #files = ["data/fl_det_1.csv", "data/fl_stored_1.csv", "data/oil_1.csv"]
     #files = ['data/fl_det_5.csv', 'data/fl_stored_5.csv', 'data/fl_det_4.csv', 'data/fl_stored_4.csv']
-    #files = ['data/fl_stored_1.csv', 'data/fl_det_1.csv','data/fl_stored_2.csv', 'data/fl_det_2.csv', 'data/fl_det_3.csv','data/fl_stored_4.csv', 'data/fl_det_4.csv','data/fl_stored_5.csv', 'data/fl_det_5.csv']
+    #files = ['data/fl_stored_1.csv', 'data/fl_det_1.csv','data/fl_stored_2.csv', 'data/fl_det_2.csv', 'data/fl_stored_3.csv', 'data/fl_det_3.csv','data/fl_stored_4.csv', 'data/fl_det_4.csv','data/fl_stored_5.csv', 'data/fl_det_5.csv']
+    files = ["data/6.6.2019/EJ309-1.csv","data/6.6.2019/EJ309-2.csv","data/6.6.2019/EJ309-3.csv","data/6.6.2019/EJ309-4.csv"]
     #files = ['data/fl_det_5.csv', 'data/fl_stored_1.csv', 'data/oil_1.csv']
+    files = ["data/6.6.2019/TMB-1.csv","data/6.6.2019/TMB-3.csv","data/6.6.2019/TMB-4.csv"]
     means = []
     stds = []
-    amps = []
+    amps = [] 
+    '''
+    plt.figure(1)
     wavelength, intensity = read_file(files[0])
     plt.scatter(wavelength, intensity, s=1)
     plt.title("Mineral Oil Fluorescence")
     plt.ylabel("Intensity (arb)")
     plt.xlabel("Wavelength (nm)")
     plt.ylim(-.01, .04)
+    plt.figure(2)
+    wavelength, intensity1 = read_file(files[2])
+    wavelength, intensity2 = read_file(files[3])
+    plt.scatter(wavelength, intensity1-intensity2, s=1)
+    plt.ylim(-.01, .04)
+
     plt.show()
-    exit()
+    #exit()
+    '''
+    mode = 0
     if mode == 0:
         for file in files:
 
             wavelength, intensity = read_file(file)
             params = FitFlor(wavelength, intensity)
-            df.loc[len(df)] = wavelength, intensity, params
-            plt.scatter(wavelength, intensity, alpha=1, s=1)
-            plt.plot(wavelength,testmodal(wavelength,*params), color="r")
-            means.append([params[0], params[3], params[6], params[9], params[12]])
-            stds.append([params[1], params[4], params[7], params[10], params[13]])
-            amps.append([params[2], params[5], params[8], params[11], params[14]])
-
+            print(params)
+            #df.loc[len(df)] = wavelength, intensity, params
+            #plt.scatter(wavelength, intensity, alpha=1, s=1)
+            #plt.plot(wavelength,testmodal(wavelength,*params), color="r")
+            #means.append([params[0], params[3], params[6], params[9], params[12]])
+            #stds.append([params[1], params[4], params[7], params[10], params[13]])
+            #amps.append([params[2], params[5], params[8], params[11], params[14]])
+        exit()
         #plt.ylim(-.02, .06)
         #plt.xlim(300, 500)
         plt.show()
@@ -75,7 +88,7 @@ def main():
             amp4.append(amps[i][4])
         print(np.mean(mean0))
         params = [np.mean(mean0), np.mean(std0),np.mean(amp0), np.mean(mean1), np.mean(std1), np.mean(amp1), np.mean(mean2), np.mean(std2), np.mean(amp2), np.mean(mean3), np.mean(std3), np.mean(amp3), np.mean(amp4), np.mean(mean4), np.mean(std4)]
-            #, np.mean(mean4), np.mean(std4), np.mean(amp4)
+            #, np.mean(mean4), np.mean(std4), np.mean(amp4)]
         wavelength = np.linspace(300, 600, 10000)
         print(params)
         #exit()
@@ -84,8 +97,8 @@ def main():
         #exit()
 
         #Save
-        np.savetxt( "Params_stored.txt", params)
-        df.to_hdf("Stored.h5", key='data')
+        np.savetxt( "Params_det.txt", params)
+        df.to_hdf("det.h5", key='data')
         #print(params)
         plt.show()
         #plotFlor(df)
@@ -100,13 +113,13 @@ def main():
 
 def FitFlor(wavelength, intensity):
 
-    #Bimodal Distribution
-    #expected = (424, 14, .08, 444, 8, .05)
-    #params, cov = curve_fit(bimodal,wavelength,intensity,expected)
-
     #Trimodal Distribution
-    expected = (406, 10, .35, 430, 8, .5, 455, 12, .4, 483, 12, .21, 530, 12, .1)
-    params, cov = curve_fit(testmodal,wavelength,intensity,expected)
+    expected = (426, 14, .17, 452, 8, .15, 486, 8, .09)
+    params, cov = curve_fit(trimodal,wavelength,intensity,expected)
+
+    #pentmodal Distribution
+    #expected = (426, 10, .16, 452, 8, .15, 486, 12, .09, 455, 12, .02, 530, 12, .01)
+    #params, cov = curve_fit(testmodal,wavelength,intensity,expected)
 
     return params
 

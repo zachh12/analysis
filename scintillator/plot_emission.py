@@ -7,7 +7,7 @@ from scipy import asarray as ar,exp
 from scipy.stats import norm
 from scipy.optimize import curve_fit
 import pandas as pd
-import seaborn as sns; sns.set()
+#import seaborn as sns; sns.set()
 
 def main():
 

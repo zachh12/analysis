@@ -12,7 +12,7 @@ from scipy import stats
 from scipy.stats import norm
 
 bad = [26384.0, 24579.0]
-chan = 672
+chan = 626
 tau = 753
 tau2 = 228
 
@@ -28,14 +28,14 @@ def plots():
 
     cut = (df['ecal'] > 2000)
     df = df[cut]
-
+    print(len(df))
     plt.hist(df['ecal'], histtype='step', lw=2,color='r', bins=15)
 
     plt.show()
     #exit()
     tune(df)
-    #ecorr, ecorrt = corr(df)
-    #FWHM(df, ecorr, ecorrt)
+    ecorr, ecorrt = corr(df)
+    FWHM(df, ecorr, ecorrt)
 
     plt.show()
 def tune(df):
@@ -98,10 +98,10 @@ def corr(df):
     print("None: ", np.std(df['ecal'])*2.35)
     print("Time: ", np.std(ecorrt)*2.35)
     print("Length: ", np.std(ecorr)*2.35)
-    #plt.figure(100)
-    #plt.hist(df['ecal'] - np.mean(df['ecal']), alpha=.6, bins=20)
-    #plt.hist(ecorrt - np.mean(ecorrt), alpha=.5, bins=20)
-    #plt.hist(ecorr - np.mean(ecorr), alpha=.5, bins=12)
+    plt.figure(100)
+    plt.hist(df['ecal'] - np.mean(df['ecal']), alpha=.6, bins=20)
+    plt.hist(ecorrt - np.mean(ecorrt), alpha=.5, bins=20)
+    plt.hist(ecorr - np.mean(ecorr), alpha=.5, bins=12)
     plt.show()
     return ecorr, ecorrt
 
@@ -144,7 +144,7 @@ def FWHM(df, ecorr, ecorrt):
     #plt.xlabel("Energy Centered at Mean")
     plt.show()
 def getDataFrame():
-    name = "data/chan626data.h5"
+    name = "data/trapC_chan626data.h5"
     #name = "data/chan"
     try:
         df = pd.read_hdf(name, key='data')

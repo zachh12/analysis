@@ -30,7 +30,7 @@ def main(wf, doPlot=False):
     align_point = 0.95
     wf_idx = int(wf)
 
-    chan = 626
+    chan = 692
     #chan = 692
     directory = "chan{}_wfs".format(chan)
 
@@ -45,8 +45,8 @@ def main(wf, doPlot=False):
     detector = PPC( conf_file, wf_padding=100)
 
     vm = VelocityModel(include_beta=False)
-    hp1 = HiPassFilterModel(detector)
-    #hp2 = HiPassFilterModel(detector)
+    hp = HiPassFilterModel(detector)
+    hp2 = HiPassFilterModel(detector)
     fs = FirstStageFilterModel(detector)
     al = AntialiasingFilterModel(detector)
     oshoot = OvershootFilterModel(detector)
@@ -78,14 +78,27 @@ def main(wf, doPlot=False):
     im.apply_to_detector([-2.739048e-01, -1.54175], detector)
     '''
 
-    #try
-    vm.apply_to_detector([6.329044e+06, 7.070545190569272265e+06, 6.3290662440e+06, 7.320139440024248324e+06], detector)
-    fs.apply_to_detector([-1.51087, 9.790192e-01, -2.10403], detector)
-    al.apply_to_detector([7.99097e-01, .0091], detector)
-    oshoot.apply_to_detector([-5.2901815, 1.80], detector)
-    osc.apply_to_detector([-2.181, 7, -2.2, 5.], detector)
-    im.apply_to_detector([-.12, -1.54175], detector)
+    #692B
+    vm.apply_to_detector([4721003, 1772756, 8980887, 3438183], detector)
+    hp.apply_to_detector([72], detector)
+    hp2.apply_to_detector([34830], detector)
+    fs.apply_to_detector([-1.5689873968, 0.971197844, -2.6044181698976994], detector)
+    al.apply_to_detector([0.8011119473597831, 0.0517397887401], detector)
+    oshoot.apply_to_detector([-5.4060800418507, 1.8518756115], detector)
+    osc.apply_to_detector([-2.0019835639, 5.70104877, -2.038719650, 4.9310608676], detector)
+    im.apply_to_detector([-0.1088216908, -1.389909466578219], detector)
+    tm.apply_to_detector(315.4664, detector)
 
+    #672
+    vm.apply_to_detector([4466455.23, 4507219.99, 6551208.72, 4926098.82], detector)
+    hp.apply_to_detector([70.754], detector)
+    hp2.apply_to_detector([34335.99], detector)
+    fs.apply_to_detector([-1.566736274, 0.978057037, -2.04346823], detector)
+    al.apply_to_detector([0.608387794, 0.1566835], detector)
+    oshoot.apply_to_detector([-5.286922396, 1.71539392], detector)
+    osc.apply_to_detector([-0.58336895, 5.127040064, -0.520893234, 5.0062789722], detector)
+    im.apply_to_detector([-0.1740234244, -1.739642928], detector)
+    tm.apply_to_detector(1243., detector)
 
     data = np.load(wf_file, encoding="latin1")
     wfs = data['wfs']
